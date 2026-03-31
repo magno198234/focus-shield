@@ -248,6 +248,22 @@ app.get('/api/guardian-status/:guardianId', (req, res) => {
   }
 });
 
+// ─── ADMIN: LISTAR GUARDIÕES ──────────────────────────────────────────────────
+app.get('/api/admin/guardians', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (adminKey !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Não autorizado' });
+  }
+
+  const guardians = db.prepare(`
+    SELECT id, name, email, paid, payment_id, created_at
+    FROM guardians
+    ORDER BY created_at DESC
+  `).all();
+
+  res.json(guardians);
+});
+
 // ─── ADMIN: LISTAR PAGAMENTOS ─────────────────────────────────────────────────
 app.get('/api/admin/payments', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
