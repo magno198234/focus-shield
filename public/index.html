@@ -60,17 +60,11 @@
     .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600}
     .badge-on{background:rgba(16,185,129,0.1);color:#34d399}
     .link-box{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:7px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);font-family:monospace;font-size:10px;color:#34d399;word-break:break-all}
-    .timer{display:flex;align-items:center;gap:5px}
-    .timer-bar{width:80px;height:3px;border-radius:2px;background:rgba(255,255,255,0.06)}
-    .timer-fill{height:100%;border-radius:2px;background:#10b981;transition:width 1s linear}
-    .timer-txt{font-family:monospace;font-size:10px;color:#71717a;min-width:36px}
-    .user-row{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-    .devices{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-    .dev{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);font-size:10px;color:#a1a1aa}
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
     .modal.show{display:flex}
     .modal-c{background:#18181b;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;max-width:400px;width:92%;animation:fadeIn 0.2s ease}
     .notif{display:none;position:fixed;top:12px;right:12px;padding:10px 16px;border-radius:7px;font-size:11px;font-weight:500;z-index:1100;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;animation:fadeIn 0.3s}
+    .notif.err{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#ef4444}
     .notif.show{display:block}
     .logout-btn{padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#52525b;font-size:10px;margin-top:8px;width:100%}
 
@@ -97,7 +91,7 @@
     <label>Email</label>
     <input class="inp" id="login-email" placeholder="seu@email.com" value="admin@focusshield.app">
     <label>Senha</label>
-    <input class="inp" id="login-pass" type="password" placeholder="Sua senha" value="admin123">
+    <input class="inp" id="login-pass" type="password" placeholder="Sua senha">
     <div class="login-err" id="login-err">Email ou senha inválidos</div>
     <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:16px" onclick="doLogin()">Entrar</button>
   </div>
@@ -115,11 +109,11 @@
     <div class="nav" data-page="questionnaire" onclick="goPage('questionnaire',this)">💛 Questionário</div>
     <div class="nav-label" id="admin-label" style="display:none">Administrador</div>
     <div class="nav" id="nav-guardians" data-page="guardians" onclick="goPage('guardians',this)" style="display:none">👥 Guardiões</div>
+    <div class="nav" id="nav-payments" data-page="payments" onclick="goPage('payments',this)" style="display:none">💰 Pagamentos</div>
     <div class="nav" id="nav-filters" data-page="filters" onclick="goPage('filters',this)" style="display:none">⚙️ Filtros</div>
     <div class="sidebar-footer">
       <div class="badge" id="role-badge"></div>
       <div class="name" id="user-name"></div>
-      <div class="grp" id="user-group"></div>
       <button class="logout-btn" onclick="doLogout()">Sair</button>
     </div>
   </div>
@@ -127,51 +121,44 @@
   <div class="main">
     <!-- DASHBOARD -->
     <div class="page fade" id="pg-dashboard">
-      <h1>Dashboard</h1><p class="psub">Visão geral dos protegidos</p>
+      <h1>Dashboard</h1><p class="psub">Visão geral do sistema</p>
       <div class="stats">
-        <div class="stat"><div class="stat-n" style="color:#10b981" id="s-users">0</div><div class="stat-l">Protegidos</div></div>
-        <div class="stat"><div class="stat-n" style="color:#3b82f6" id="s-devices">0</div><div class="stat-l">Dispositivos</div></div>
-        <div class="stat"><div class="stat-n" style="color:#f59e0b" id="s-blocked">0</div><div class="stat-l">Bloqueios</div></div>
-        <div class="stat"><div class="stat-n" style="color:#8b5cf6" id="s-guardians">0</div><div class="stat-l">Guardiões</div></div>
+        <div class="stat"><div class="stat-n" style="color:#10b981" id="s-guardians">0</div><div class="stat-l">Guardiões</div></div>
+        <div class="stat"><div class="stat-n" style="color:#3b82f6" id="s-pagos">0</div><div class="stat-l">Pagos</div></div>
+        <div class="stat"><div class="stat-n" style="color:#f59e0b" id="s-pendentes">0</div><div class="stat-l">Pendentes</div></div>
+        <div class="stat"><div class="stat-n" style="color:#8b5cf6" id="s-pagamentos">0</div><div class="stat-l">Pagamentos</div></div>
       </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <span style="font-size:13px;font-weight:600">Protegidos</span>
-          <button class="btn btn-p" onclick="goPage('generate',document.querySelector('[data-page=generate]'))">+ Novo</button>
+          <span style="font-size:13px;font-weight:600">Guardiões Recentes</span>
+          <button class="btn btn-p" onclick="goPage('guardians',document.querySelector('[data-page=guardians]'))">+ Novo</button>
         </div>
-        <div id="users-list"></div>
+        <div id="dashboard-list"><p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Carregando...</p></div>
       </div>
     </div>
 
     <!-- GENERATE -->
     <div class="page fade" id="pg-generate" style="display:none">
-      <h1>Gerar Link</h1><p class="psub">Links de ativação e desativação</p>
+      <h1>Gerar Link</h1><p class="psub">Crie um link de setup gratuito para um guardião</p>
       <div class="card" style="max-width:480px">
         <div id="gen-form">
-          <label>Nome ou apelido</label>
-          <input class="inp" id="gen-name" placeholder="Ex: João M.">
-          <label>Gênero</label>
-          <div class="chips">
-            <div class="chip" onclick="selGender('male',this)">♂ Masculino</div>
-            <div class="chip" onclick="selGender('female',this)">♀ Feminino</div>
-          </div>
-          <label>Dispositivo</label>
-          <div class="chips">
-            <div class="chip" onclick="selDevice('pc',this)">🖥️ PC</div>
-            <div class="chip" onclick="selDevice('android',this)">📱 Android</div>
-            <div class="chip" onclick="selDevice('iphone',this)">🍎 iPhone</div>
-            <div class="chip" onclick="selDevice('tablet',this)">📱 Tablet</div>
-          </div>
-          <p style="font-size:10px;color:#3f3f46;margin-top:12px">🕐 Link expira em 20 minutos</p>
+          <label>Nome completo do Guardião</label>
+          <input class="inp" id="gen-name" placeholder="Ex: João Silva">
+          <label>Email do Guardião</label>
+          <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
+          <p style="font-size:10px;color:#3f3f46;margin-top:12px">🔒 Cria um guardião gratuito e gera o link de setup</p>
           <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link</button>
         </div>
         <div id="gen-result" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <span style="font-size:12px" id="gen-label"></span>
-            <div class="timer"><div class="timer-bar"><div class="timer-fill" id="t-fill" style="width:100%"></div></div><span class="timer-txt" id="t-txt">20:00</span></div>
+          <div style="margin-bottom:12px">
+            <span style="font-size:12px;color:#34d399;font-weight:600" id="gen-label"></span>
           </div>
-          <div class="link-box"><span style="flex:1" id="gen-url"></span><button onclick="copyL()" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button></div>
-          <p style="font-size:10px;color:#3f3f46;margin-top:6px" id="gen-instr"></p>
+          <label>Link de Setup</label>
+          <div class="link-box" style="margin-top:6px">
+            <span style="flex:1" id="gen-url"></span>
+            <button onclick="copyL()" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button>
+          </div>
+          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o guardião configurar o NextDNS no dispositivo do protegido.</p>
           <button class="btn btn-s" style="margin-top:12px" onclick="clearGen()">Gerar Novo</button>
         </div>
       </div>
@@ -203,12 +190,26 @@
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">Novo Guardião</div>
         <input class="inp" id="g-name" placeholder="Nome completo">
         <input class="inp" id="g-email" placeholder="Email" style="margin-top:6px">
-        <input class="inp" id="g-group" placeholder="Grupo / Célula / Igreja" style="margin-top:6px">
         <button class="btn btn-p" style="margin-top:10px" onclick="addGuardian()">+ Criar</button>
+        <div id="guardian-link-result" style="display:none;margin-top:12px">
+          <label>Link de Setup Gerado</label>
+          <div class="link-box" style="margin-top:6px">
+            <span style="flex:1" id="g-setup-link"></span>
+            <button onclick="copyGLink()" style="background:none;border:none;color:#34d399;font-size:14px">📋</button>
+          </div>
+        </div>
       </div>
       <div class="card" style="max-width:520px">
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">Guardiões Ativos</div>
-        <div id="guardians-list"></div>
+        <div id="guardians-list"><p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Carregando...</p></div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="page fade" id="pg-payments" style="display:none">
+      <h1>Pagamentos</h1><p class="psub">Histórico de pagamentos PIX</p>
+      <div class="card" style="max-width:600px">
+        <div id="payments-list"><p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Carregando...</p></div>
       </div>
     </div>
 
@@ -243,40 +244,54 @@
 // STATE
 // ============================================
 let user = null;
-let API = '';
-let selG = null, selD = null, timerIv = null, genUrl = '';
+let adminKey = null;
+let genUrl = '';
+let lastGuardianLink = '';
 
 // ============================================
 // LOGIN
 // ============================================
 async function doLogin() {
-  const email = document.getElementById('login-email').value;
-  const pass = document.getElementById('login-pass').value;
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  const errEl = document.getElementById('login-err');
+  errEl.style.display = 'none';
+
   try {
-    const r = await fetch(API+'/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
-    if (!r.ok) { document.getElementById('login-err').style.display='block'; return; }
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    if (!r.ok) { errEl.style.display = 'block'; return; }
     user = await r.json();
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='flex';
+    // Guardamos a senha para usar como x-admin-key nas rotas admin
+    adminKey = pass;
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'flex';
     setupUI();
     loadDashboard();
-  } catch(e) { document.getElementById('login-err').style.display='block'; }
+  } catch(e) {
+    errEl.style.display = 'block';
+  }
 }
 
 function doLogout() {
   user = null;
-  document.getElementById('app-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
+  adminKey = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
 function setupUI() {
-  document.getElementById('user-name').textContent = user.name;
-  document.getElementById('user-group').textContent = user.group || '';
+  document.getElementById('user-name').textContent = user.email;
   document.getElementById('role-badge').textContent = user.role === 'admin' ? '👑 Admin' : '🛡️ Guardião';
   if (user.role === 'admin') {
-    document.getElementById('admin-label').style.display='';
-    document.getElementById('nav-guardians').style.display='';
-    document.getElementById('nav-filters').style.display='';
+    document.getElementById('admin-label').style.display = '';
+    document.getElementById('nav-guardians').style.display = '';
+    document.getElementById('nav-payments').style.display = '';
+    document.getElementById('nav-filters').style.display = '';
   }
 }
 
@@ -284,13 +299,14 @@ function setupUI() {
 // NAVIGATION
 // ============================================
 function goPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.style.display='none');
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
-  document.getElementById('pg-'+id).style.display='block';
-  if(el) el.classList.add('active');
-  if(id==='dashboard') loadDashboard();
-  if(id==='guardians') loadGuardians();
-  if(id==='generate') clearGen();
+  document.getElementById('pg-' + id).style.display = 'block';
+  if (el) el.classList.add('active');
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'guardians') loadGuardians();
+  if (id === 'payments') loadPayments();
+  if (id === 'generate') clearGen();
 }
 
 // ============================================
@@ -298,160 +314,229 @@ function goPage(id, el) {
 // ============================================
 async function loadDashboard() {
   try {
-    const [stats, users] = await Promise.all([
-      fetch(API+'/api/stats',{headers:{'x-auth-token':user.id}}).then(r=>r.json()),
-      fetch(API+'/api/protected',{headers:{'x-auth-token':user.id}}).then(r=>r.json())
+    const [guardians, payments] = await Promise.all([
+      fetch('/api/admin/guardians', {headers: {'x-admin-key': adminKey}}).then(r => r.json()),
+      fetch('/api/admin/payments', {headers: {'x-admin-key': adminKey}}).then(r => r.json())
     ]);
-    document.getElementById('s-users').textContent = stats.users;
-    document.getElementById('s-devices').textContent = stats.devices;
-    document.getElementById('s-blocked').textContent = stats.blocked;
-    document.getElementById('s-guardians').textContent = stats.guardians;
+
+    const pagos = guardians.filter(g => g.paid == 1).length;
+    const pendentes = guardians.filter(g => g.paid == 0).length;
+
+    document.getElementById('s-guardians').textContent = guardians.length;
+    document.getElementById('s-pagos').textContent = pagos;
+    document.getElementById('s-pendentes').textContent = pendentes;
+    document.getElementById('s-pagamentos').textContent = payments.length;
 
     let h = '';
-    if (users.length === 0) h = '<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum protegido ainda. Gere um link para começar.</p>';
-    users.forEach(u => {
-      const gc = u.gender==='male'?'#3b82f6':'#ec4899';
-      const gi = u.gender==='male'?'♂':'♀';
-      const gl = u.gender==='male'?'Masculino':'Feminino';
-      h += `<div class="user-row"><div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="color:${gc};font-size:16px">${gi}</span>
-          <span style="font-weight:600;font-size:12px">${u.name}</span>
-          <span style="font-size:9px;color:#52525b;background:rgba(255,255,255,0.03);padding:1px 6px;border-radius:3px">${gl}</span>
-        </div></div>
-        <div class="devices">${(u.devices||[]).map(d=>`<div class="dev">${devE(d.type)} ${devN(d.type)} <span class="badge badge-on"><span style="width:4px;height:4px;border-radius:50%;background:#10b981;display:inline-block"></span>Ativo</span> <span style="color:#52525b;font-family:monospace">${d.blocked_count||0}</span></div>`).join('')}</div>
-      </div>`;
-    });
-    document.getElementById('users-list').innerHTML = h;
-  } catch(e) { console.error(e); }
+    if (guardians.length === 0) {
+      h = '<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda. Crie um na aba Guardiões.</p>';
+    } else {
+      guardians.slice(0, 10).forEach(g => {
+        const statusC = g.paid ? '#10b981' : '#f59e0b';
+        const statusT = g.paid ? 'Pago' : 'Pendente';
+        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <div>
+            <div style="font-weight:600;font-size:12px">${g.name}</div>
+            <div style="font-size:10px;color:#52525b">${g.email}</div>
+          </div>
+          <span style="font-size:9px;font-weight:600;color:${statusC};background:rgba(255,255,255,0.03);padding:3px 8px;border-radius:10px;border:1px solid ${statusC}33">${statusT}</span>
+        </div>`;
+      });
+    }
+    document.getElementById('dashboard-list').innerHTML = h;
+  } catch(e) {
+    console.error('Erro dashboard:', e);
+  }
 }
 
-function devE(t){return{pc:'🖥️',android:'📱',iphone:'🍎',ipad:'📱',tablet:'📱'}[t]||'🖥️'}
-function devN(t){return{pc:'PC',android:'Android',iphone:'iPhone',ipad:'iPad',tablet:'Tablet'}[t]||t}
-
 // ============================================
-// GENERATE LINK
+// GENERATE LINK (usa create-guardian gratuito)
 // ============================================
-function selGender(g,el){selG=g;el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
-function selDevice(d,el){selD=d;el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
-
 async function genLink() {
   const name = document.getElementById('gen-name').value.trim();
-  if(!name||!selG||!selD){notify('Preencha todos os campos');return}
+  const email = document.getElementById('gen-email').value.trim();
+  if (!name || !email) { notify('Preencha nome e email', true); return; }
+
   try {
-    const r = await fetch(API+'/api/tokens/generate',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':user.id},body:JSON.stringify({name,gender:selG,device_type:selD,type:'activation'})});
+    const r = await fetch('/api/admin/create-guardian', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify({name, email})
+    });
     const data = await r.json();
-    genUrl = data.link;
-    const gc = selG==='male'?'#3b82f6':'#ec4899';
-    document.getElementById('gen-label').innerHTML = `🛡️ <strong>${name}</strong> <span style="color:${gc}">${selG==='male'?'♂':'♀'}</span>`;
+    if (!r.ok) { notify(data.error || 'Erro ao gerar link', true); return; }
+
+    genUrl = data.setupLink;
+    document.getElementById('gen-label').textContent = '✅ Link gerado para ' + name;
     document.getElementById('gen-url').textContent = genUrl;
-    const instr = {pc:'Protegido instala extensão no navegador.',android:'Protegido configura DNS Privado.',iphone:'Protegido baixa perfil no Safari.',tablet:'Protegido instala extensão ou configura DNS.'};
-    document.getElementById('gen-instr').textContent = instr[selD];
-    document.getElementById('gen-form').style.display='none';
-    document.getElementById('gen-result').style.display='block';
-    startTimer();
-    notify('Link gerado para '+name);
-  } catch(e) { notify('Erro ao gerar link'); }
+    document.getElementById('gen-form').style.display = 'none';
+    document.getElementById('gen-result').style.display = 'block';
+    notify('Link gerado para ' + name);
+  } catch(e) {
+    notify('Erro ao gerar link', true);
+  }
 }
 
-function clearGen(){
-  document.getElementById('gen-form').style.display='block';
-  document.getElementById('gen-result').style.display='none';
-  document.getElementById('gen-name').value='';
-  selG=null;selD=null;
-  document.querySelectorAll('#pg-generate .chip').forEach(c=>c.classList.remove('on'));
-  if(timerIv)clearInterval(timerIv);
+function clearGen() {
+  document.getElementById('gen-form').style.display = 'block';
+  document.getElementById('gen-result').style.display = 'none';
+  document.getElementById('gen-name').value = '';
+  document.getElementById('gen-email').value = '';
+  genUrl = '';
 }
 
-function copyL(){navigator.clipboard.writeText(genUrl).then(()=>{document.getElementById('copy-b').textContent='✅';setTimeout(()=>document.getElementById('copy-b').textContent='📋',2000)})}
-
-function startTimer(){
-  let s=1200;if(timerIv)clearInterval(timerIv);
-  timerIv=setInterval(()=>{s--;if(s<=0){clearInterval(timerIv);clearGen();return}
-    const m=Math.floor(s/60),sec=s%60;
-    document.getElementById('t-txt').textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
-    document.getElementById('t-fill').style.width=(s/1200*100)+'%';
-    if(s<180){document.getElementById('t-fill').style.background='#ef4444';document.getElementById('t-txt').style.color='#ef4444'}
-    else{document.getElementById('t-fill').style.background='#10b981';document.getElementById('t-txt').style.color='#71717a'}
-  },1000);
+function copyL() {
+  navigator.clipboard.writeText(genUrl).then(() => {
+    document.getElementById('copy-b').textContent = '✅';
+    setTimeout(() => document.getElementById('copy-b').textContent = '📋', 2000);
+  });
 }
 
 // ============================================
 // GUARDIANS
 // ============================================
-async function loadGuardians(){
-  try{
-    const r=await fetch(API+'/api/guardians',{headers:{'x-auth-token':user.id}});
-    const gs=await r.json();
-    let h='';
-    gs.forEach(g=>{h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
-      <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email} — ${g.group_name||''}</div></div>
-      <div style="font-size:10px;color:#a1a1aa">${g.protected_count||0} protegidos</div></div>`});
-    document.getElementById('guardians-list').innerHTML=h||'<p style="font-size:11px;color:#3f3f46">Nenhum guardião</p>';
-  }catch(e){}
+async function loadGuardians() {
+  try {
+    const r = await fetch('/api/admin/guardians', {headers: {'x-admin-key': adminKey}});
+    const gs = await r.json();
+    let h = '';
+    if (gs.length === 0) {
+      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum guardião cadastrado</p>';
+    } else {
+      gs.forEach(g => {
+        const statusC = g.paid ? '#10b981' : '#f59e0b';
+        const statusT = g.paid ? '✅ Pago' : '⏳ Pendente';
+        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <div>
+            <div style="font-weight:600;font-size:11px">${g.name}</div>
+            <div style="font-size:9px;color:#52525b">${g.email}</div>
+            <div style="font-size:9px;color:#3f3f46;margin-top:2px">${new Date(g.created_at).toLocaleDateString('pt-BR')}</div>
+          </div>
+          <span style="font-size:9px;font-weight:600;color:${statusC}">${statusT}</span>
+        </div>`;
+      });
+    }
+    document.getElementById('guardians-list').innerHTML = h;
+  } catch(e) {
+    document.getElementById('guardians-list').innerHTML = '<p style="font-size:11px;color:#ef4444">Erro ao carregar</p>';
+  }
 }
 
-async function addGuardian(){
-  const n=document.getElementById('g-name').value.trim();
-  const e=document.getElementById('g-email').value.trim();
-  const g=document.getElementById('g-group').value.trim();
-  if(!n||!e||!g){notify('Preencha todos');return}
-  try{
-    const r=await fetch(API+'/api/guardians',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':user.id},body:JSON.stringify({name:n,email:e,group_name:g})});
-    const data=await r.json();
-    if(data.password) notify('Guardião criado! Senha: '+data.password);
-    document.getElementById('g-name').value='';document.getElementById('g-email').value='';document.getElementById('g-group').value='';
+async function addGuardian() {
+  const n = document.getElementById('g-name').value.trim();
+  const e = document.getElementById('g-email').value.trim();
+  if (!n || !e) { notify('Preencha nome e email', true); return; }
+
+  try {
+    const r = await fetch('/api/admin/create-guardian', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'x-admin-key': adminKey},
+      body: JSON.stringify({name: n, email: e})
+    });
+    const data = await r.json();
+    if (!r.ok) { notify(data.error || 'Erro ao criar', true); return; }
+
+    lastGuardianLink = data.setupLink;
+    document.getElementById('g-setup-link').textContent = lastGuardianLink;
+    document.getElementById('guardian-link-result').style.display = 'block';
+    document.getElementById('g-name').value = '';
+    document.getElementById('g-email').value = '';
+    notify('Guardião criado! Copie o link de setup.');
     loadGuardians();
-  }catch(e){notify('Erro ao criar')}
+  } catch(e) {
+    notify('Erro ao criar guardião', true);
+  }
+}
+
+function copyGLink() {
+  navigator.clipboard.writeText(lastGuardianLink).then(() => notify('Link copiado!'));
+}
+
+// ============================================
+// PAYMENTS
+// ============================================
+async function loadPayments() {
+  try {
+    const r = await fetch('/api/admin/payments', {headers: {'x-admin-key': adminKey}});
+    const ps = await r.json();
+    let h = '';
+    if (ps.length === 0) {
+      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum pagamento ainda</p>';
+    } else {
+      ps.forEach(p => {
+        const statusC = p.status === 'approved' ? '#10b981' : '#f59e0b';
+        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <div>
+            <div style="font-weight:600;font-size:11px">${p.guardian_name}</div>
+            <div style="font-size:9px;color:#52525b">${p.email}</div>
+            <div style="font-size:9px;color:#3f3f46;margin-top:1px">${new Date(p.created_at).toLocaleDateString('pt-BR')}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div>
+            <div style="font-size:9px;color:${statusC};font-weight:600">${p.status === 'approved' ? '✅ Aprovado' : '⏳ Pendente'}</div>
+          </div>
+        </div>`;
+      });
+    }
+    document.getElementById('payments-list').innerHTML = h;
+  } catch(e) {
+    document.getElementById('payments-list').innerHTML = '<p style="font-size:11px;color:#ef4444">Erro ao carregar</p>';
+  }
 }
 
 // ============================================
 // QUESTIONNAIRE
 // ============================================
-function showQ(gender){
-  const male=[
+function showQ(gender) {
+  const male = [
     {q:"Você já conversou com alguém de confiança sobre o que está sentindo?",v:null},
     {q:"Pense na sua família. Sua esposa, seus filhos, seus pais... Eles acreditam em você.",v:{t:"Não temas, porque eu sou contigo; eu te fortaleço e te ajudo.",r:"Isaías 41:10"}},
     {q:"Deus conhece sua luta. Ele não te condena. Ele te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},
     {q:"Tem certeza que deseja desativar sua proteção?",v:null,final:true}
   ];
-  const female=[
+  const female = [
     {q:"Você já conversou com alguém de confiança sobre o que está sentindo?",v:null},
     {q:"Pense no seu valor. Você é amada, é filha de Deus.",v:{t:"Venham a mim, todos os que estão cansados, e eu darei descanso.",r:"Mateus 11:28"}},
     {q:"Jesus te ama como você é. Ele quer te dar vida plena.",v:{t:"Se o Filho os libertar, vocês de fato serão livres.",r:"João 8:36"}},
     {q:"Tem certeza que deseja desativar sua proteção?",v:null,final:true}
   ];
-  const steps=gender==='male'?male:female;let step=0;
-  function render(){
-    const s=steps[step];
-    let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  const steps = gender === 'male' ? male : female;
+  let step = 0;
+  function render() {
+    const s = steps[step];
+    let h = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <span style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:0.1em">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span>
       <span style="cursor:pointer;color:#52525b;font-size:16px" onclick="document.getElementById('q-modal').classList.remove('show')">&times;</span></div>`;
-    if(s.v)h+=`<div style="padding:10px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
+    if (s.v) h += `<div style="padding:10px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
       <p style="font-size:12px;color:#a1a1aa;font-style:italic;line-height:1.5">"${s.v.t}"</p><span style="font-size:9px;color:#10b981;font-weight:600">${s.v.r}</span></div>`;
-    h+=`<h3 style="font-size:14px;font-weight:600;color:#fafafa;line-height:1.4;margin-bottom:14px">${s.q}</h3>`;
-    if(s.final){
-      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').classList.remove('show')">Não, quero continuar protegid${gender==='male'?'o':'a'}!</button>`;
-      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').classList.remove('show')">Sim, desativar</button>`;
-    }else{
-      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Isso me faz querer continuar</button>`;
-      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar mais</button>`;
+    h += `<h3 style="font-size:14px;font-weight:600;color:#fafafa;line-height:1.4;margin-bottom:14px">${s.q}</h3>`;
+    if (s.final) {
+      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').classList.remove('show')">Não, quero continuar protegid${gender==='male'?'o':'a'}!</button>`;
+      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').classList.remove('show')">Sim, desativar</button>`;
+    } else {
+      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Isso me faz querer continuar</button>`;
+      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar mais</button>`;
     }
-    h+=`<div style="display:flex;gap:3px;justify-content:center;margin-top:16px">${steps.map((_,i)=>`<div style="width:${i===step?16:5}px;height:3px;border-radius:2px;background:${i===step?'#10b981':'rgba(255,255,255,0.08)'};transition:all 0.3s"></div>`).join('')}</div>`;
-    document.getElementById('q-content').innerHTML=h;
+    h += `<div style="display:flex;gap:3px;justify-content:center;margin-top:16px">${steps.map((_,i)=>`<div style="width:${i===step?16:5}px;height:3px;border-radius:2px;background:${i===step?'#10b981':'rgba(255,255,255,0.08)'};transition:all 0.3s"></div>`).join('')}</div>`;
+    document.getElementById('q-content').innerHTML = h;
   }
-  window.nextQ=()=>{if(step<steps.length-1){step++;render()}};
-  render();document.getElementById('q-modal').classList.add('show');
+  window.nextQ = () => { if (step < steps.length-1) { step++; render(); } };
+  render();
+  document.getElementById('q-modal').classList.add('show');
 }
 
 // ============================================
 // UTILS
 // ============================================
-function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),3000)}
+function notify(msg, isErr=false) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = 'notif show' + (isErr ? ' err' : '');
+  setTimeout(() => n.classList.remove('show'), 3500);
+}
 
-// Enter key on login
-document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus()});
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-email').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-pass').focus(); });
 </script>
 </body>
 </html>
