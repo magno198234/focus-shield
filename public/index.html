@@ -70,7 +70,7 @@
   <div class="login-box fade">
     <div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
     <h1>Focus Shield</h1>
-    <p class="sub">Painel do Guardião</p>
+    <p class="sub">Painel Administrativo</p>
     <label>Email</label>
     <input class="inp" id="login-email" placeholder="seu@email.com" value="admin@focusshield.app">
     <label>Senha</label>
@@ -119,25 +119,26 @@
       </div>
     </div>
 
-    <!-- GENERATE -->
+    <!-- GERAR LINK -->
     <div class="page fade" id="pg-generate" style="display:none">
-      <h1>Gerar Link</h1><p class="psub">Crie um link de setup gratuito</p>
+      <h1>Gerar Link</h1><p class="psub">Crie um link de acesso para o guardião</p>
       <div class="card" style="max-width:480px">
         <div id="gen-form">
           <label>Nome do Guardião</label>
           <input class="inp" id="gen-name" placeholder="Ex: João Silva">
           <label>Email do Guardião</label>
           <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
-          <button class="btn btn-p" style="margin-top:14px" onclick="genLink()">🔗 Gerar Link</button>
+          <p style="font-size:10px;color:#3f3f46;margin-top:10px">O guardião clica no link e acessa o painel diretamente, sem senha.</p>
+          <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link do Guardião</button>
         </div>
         <div id="gen-result" style="display:none">
           <p style="font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px" id="gen-label"></p>
-          <label>Link de Setup</label>
+          <label>Link do Painel do Guardião</label>
           <div class="link-box" style="margin-top:6px">
             <span style="flex:1" id="gen-url"></span>
             <button onclick="copyL()" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button>
           </div>
-          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o guardião configurar o NextDNS.</p>
+          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o guardião. Ele abrirá o painel sem precisar de senha.</p>
           <button class="btn btn-s" style="margin-top:12px" onclick="clearGen()">Gerar Novo</button>
         </div>
       </div>
@@ -171,7 +172,7 @@
         <input class="inp" id="g-email" placeholder="Email" style="margin-top:6px">
         <button class="btn btn-p" style="margin-top:10px" onclick="addGuardian()">+ Criar</button>
         <div id="guardian-link-result" style="display:none;margin-top:12px">
-          <label>Link de Setup</label>
+          <label>Link do Painel do Guardião</label>
           <div class="link-box" style="margin-top:6px">
             <span style="flex:1" id="g-setup-link"></span>
             <button onclick="copyGLink()" style="background:none;border:none;color:#34d399;font-size:14px">📋</button>
@@ -226,7 +227,7 @@ async function doLogin() {
   try {
     const r = await fetch('/api/login', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({email, password: pass})
     });
     if (!r.ok) { errEl.style.display = 'block'; return; }
@@ -270,27 +271,27 @@ function goPage(id, el) {
 async function loadDashboard() {
   try {
     const [guardians, payments] = await Promise.all([
-      fetch('/api/admin/guardians', {headers: {'x-admin-key': adminKey}}).then(r => r.json()),
-      fetch('/api/admin/payments', {headers: {'x-admin-key': adminKey}}).then(r => r.json())
+      fetch('/api/admin/guardians', {headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
+      fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}}).then(r=>r.json())
     ]);
-    document.getElementById('s-guardians').textContent = guardians.length || 0;
-    document.getElementById('s-pagos').textContent = guardians.filter(g => g.paid == 1).length;
-    document.getElementById('s-pendentes').textContent = guardians.filter(g => g.paid == 0).length;
-    document.getElementById('s-pagamentos').textContent = payments.length || 0;
+    document.getElementById('s-guardians').textContent = guardians.length;
+    document.getElementById('s-pagos').textContent = guardians.filter(g=>g.paid==1).length;
+    document.getElementById('s-pendentes').textContent = guardians.filter(g=>g.paid==0).length;
+    document.getElementById('s-pagamentos').textContent = payments.length;
     let h = '';
     if (!guardians.length) {
       h = '<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';
     } else {
-      guardians.slice(0, 10).forEach(g => {
+      guardians.slice(0,10).forEach(g => {
         const c = g.paid ? '#10b981' : '#f59e0b';
-        const t = g.paid ? 'Pago' : 'Pendente';
+        const t = g.paid ? 'Ativo' : 'Pendente';
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:12px">${g.name}</div><div style="font-size:10px;color:#52525b">${g.email}</div></div>
           <span style="font-size:9px;font-weight:600;color:${c}">${t}</span></div>`;
       });
     }
     document.getElementById('dashboard-list').innerHTML = h;
-  } catch(e) { console.error(e); }
+  } catch(e) {}
 }
 
 async function genLink() {
@@ -300,12 +301,12 @@ async function genLink() {
   try {
     const r = await fetch('/api/admin/create-guardian', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'x-admin-key': adminKey},
+      headers: {'Content-Type':'application/json','x-admin-key':adminKey},
       body: JSON.stringify({name, email})
     });
     const data = await r.json();
     if (!r.ok) { notify(data.error || 'Erro ao gerar link', true); return; }
-    genUrl = data.setupLink;
+    genUrl = data.guardianLink;
     document.getElementById('gen-label').textContent = '✅ Link gerado para ' + name;
     document.getElementById('gen-url').textContent = genUrl;
     document.getElementById('gen-form').style.display = 'none';
@@ -331,7 +332,7 @@ function copyL() {
 
 async function loadGuardians() {
   try {
-    const r = await fetch('/api/admin/guardians', {headers: {'x-admin-key': adminKey}});
+    const r = await fetch('/api/admin/guardians', {headers:{'x-admin-key':adminKey}});
     const gs = await r.json();
     let h = '';
     if (!gs.length) {
@@ -339,7 +340,7 @@ async function loadGuardians() {
     } else {
       gs.forEach(g => {
         const c = g.paid ? '#10b981' : '#f59e0b';
-        const t = g.paid ? '✅ Pago' : '⏳ Pendente';
+        const t = g.paid ? '✅ Ativo' : '⏳ Pendente';
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div>
           <span style="font-size:9px;font-weight:600;color:${c}">${t}</span></div>`;
@@ -356,12 +357,12 @@ async function addGuardian() {
   try {
     const r = await fetch('/api/admin/create-guardian', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'x-admin-key': adminKey},
-      body: JSON.stringify({name: n, email: e})
+      headers: {'Content-Type':'application/json','x-admin-key':adminKey},
+      body: JSON.stringify({name:n, email:e})
     });
     const data = await r.json();
     if (!r.ok) { notify(data.error || 'Erro ao criar', true); return; }
-    lastGuardianLink = data.setupLink;
+    lastGuardianLink = data.guardianLink;
     document.getElementById('g-setup-link').textContent = lastGuardianLink;
     document.getElementById('guardian-link-result').style.display = 'block';
     document.getElementById('g-name').value = '';
@@ -377,7 +378,7 @@ function copyGLink() {
 
 async function loadPayments() {
   try {
-    const r = await fetch('/api/admin/payments', {headers: {'x-admin-key': adminKey}});
+    const r = await fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}});
     const ps = await r.json();
     let h = '';
     if (!ps.length) {
@@ -388,7 +389,7 @@ async function loadPayments() {
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${p.guardian_name}</div><div style="font-size:9px;color:#52525b">${p.email}</div></div>
           <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div>
-          <div style="font-size:9px;color:${c};font-weight:600">${p.status === 'approved' ? '✅ Aprovado' : '⏳ Pendente'}</div></div></div>`;
+          <div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅ Aprovado':'⏳ Pendente'}</div></div></div>`;
       });
     }
     document.getElementById('payments-list').innerHTML = h;
@@ -428,7 +429,7 @@ function showQ(gender) {
     h += `<div style="display:flex;gap:3px;justify-content:center;margin-top:16px">${steps.map((_,i)=>`<div style="width:${i===step?16:5}px;height:3px;border-radius:2px;background:${i===step?'#10b981':'rgba(255,255,255,0.08)'};transition:all 0.3s"></div>`).join('')}</div>`;
     document.getElementById('q-content').innerHTML = h;
   }
-  window.nextQ = () => { if (step < steps.length-1) { step++; render(); } };
+  window.nextQ = () => { if(step < steps.length-1){step++;render();} };
   render();
   document.getElementById('q-modal').classList.add('show');
 }
