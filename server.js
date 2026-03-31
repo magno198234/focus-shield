@@ -314,5 +314,61 @@ app.post('/api/setup-complete', (req, res) => {
   res.json({ success: true, message: 'Configuração concluída!' });
 });
 
+// ─── CRIAR ADMIN AUTOMATICAMENTE ─────────────────────────────────────────────
+function initAdmin() {
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@focusshield.app';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT DEFAULT 'guardian',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+  if (!existing) {
+    db.prepare('INSERT INTO users (email, password, role) VALUES (?, ?, ?)').run(adminEmail, adminPassword, 'admin');
+    console.log('✅ Admin criado:', adminEmail);
+  }
+}
+
+initAdmin();
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const user = db.prepare('SELECT * FROM users WHERE email = ? AND password = ?').get(email, password);
+
+  if (!user) return res.status(401).json({ error: 'Email ou senha inválidos' });
+
+  res.json({
+    success: true,
+    role: user.role,
+    email: user.email,
+    token: Buffer.from(`${email}:${password}`).toString('base64')
+  });
+});
+
+// ─── VERIFICAR TOKEN ──────────────────────────────────────────────────────────
+app.get('/api/me', (req, res) => {
+  const auth = req.headers['authorization'];
+  if (!auth) return res.status(401).json({ error: 'Não autenticado' });
+
+  try {
+    const decoded = Buffer.from(auth, 'base64').toString('utf8');
+    const [email, password] = decoded.split(':');
+    const user = db.prepare('SELECT * FROM users WHERE email = ? AND password = ?').get(email, password);
+    if (!user) return res.status(401).json({ error: 'Token inválido' });
+    res.json({ email: user.email, role: user.role });
+  } catch {
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🛡️ Focus Shield rodando na porta ${PORT}`));
