@@ -15,19 +15,17 @@
     h1{font-size:20px;font-weight:700;margin-bottom:4px;color:#fafafa}
     .sub{font-size:13px;color:#71717a;line-height:1.5}
     .status{text-align:center;padding:20px;margin-bottom:20px}
-    .status.loading .spinner{width:32px;height:32px;border:3px solid rgba(16,185,129,0.2);border-top:3px solid #10b981;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
-    .status.error{color:#ef4444}
-    .status.success{color:#34d399}
+    .spinner{width:32px;height:32px;border:3px solid rgba(16,185,129,0.2);border-top:3px solid #10b981;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    .tabs{display:flex;gap:8px;margin-bottom:24px}
-    .tab{flex:1;padding:12px 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:12px;font-weight:500;cursor:pointer;text-align:center;font-family:'Outfit',sans-serif;transition:all 0.2s}
+    .tabs{display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px}
+    .tab{flex:1;min-width:70px;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:11px;font-weight:500;cursor:pointer;text-align:center;font-family:'Outfit',sans-serif;transition:all 0.2s;white-space:nowrap}
     .tab.on{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08);color:#34d399}
     .tab svg{display:block;margin:0 auto 4px}
 
     .steps{display:none}.steps.on{display:block}
     .step{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;animation:fadeIn 0.4s ease backwards}
-    .step:nth-child(1){animation-delay:0.1s}.step:nth-child(2){animation-delay:0.2s}.step:nth-child(3){animation-delay:0.3s}.step:nth-child(4){animation-delay:0.4s}
+    .step:nth-child(1){animation-delay:0.05s}.step:nth-child(2){animation-delay:0.1s}.step:nth-child(3){animation-delay:0.15s}.step:nth-child(4){animation-delay:0.2s}.step:nth-child(5){animation-delay:0.25s}
     .sn{width:24px;height:24px;min-width:24px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
     .sc h3{font-size:13px;font-weight:600;margin-bottom:3px;color:#e4e4e7}
     .sc p{font-size:12px;color:#a1a1aa;line-height:1.4}
@@ -36,6 +34,9 @@
     .note{margin-top:16px;padding:12px 14px;border-radius:8px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.12);border-left:3px solid #3b82f6}
     .note p{font-size:11px;color:#93c5fd;line-height:1.4}
     .note strong{color:#60a5fa}
+    .warn{margin-top:10px;padding:12px 14px;border-radius:8px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.12);border-left:3px solid #f59e0b}
+    .warn p{font-size:11px;color:#fcd34d;line-height:1.4}
+
     .verse{margin-top:24px;text-align:center;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}
     .verse p{font-size:13px;color:#a1a1aa;font-style:italic;line-height:1.5}
     .verse span{font-size:10px;color:#10b981;font-weight:600;margin-top:4px;display:block}
@@ -44,65 +45,88 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <h1>Proteção Digital</h1>
-      <p class="sub">Siga os passos abaixo para ativar sua proteção.</p>
-    </div>
-
-    <div class="status loading" id="status">
-      <div class="spinner"></div>
-      <p style="font-size:12px;color:#71717a">Validando link...</p>
-    </div>
-
-    <div id="content" style="display:none">
-      <div class="tabs">
-        <div class="tab on" onclick="showTab('iphone')" id="tab-iphone">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          iPhone
-        </div>
-        <div class="tab" onclick="showTab('android')" id="tab-android">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          Android
-        </div>
-        <div class="tab" onclick="showTab('pc')" id="tab-pc">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          PC
-        </div>
-      </div>
-
-      <div class="steps on" id="s-iphone">
-        <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra o Safari</h3><p>Use o <span class="hl">Safari</span> (navegador da Apple). Outros não funcionam.</p></div></div>
-        <div class="step"><div class="sn">2</div><div class="sc"><h3>Acesse o link</h3><p>No Safari, acesse:</p><code>https://apple.nextdns.io</code><p style="margin-top:6px">Campo Profile: <span class="hl">884789</span><br>Campo Device: <span class="hl">qualquer nome</span></p><p>Clique em <span class="hl">Download</span></p></div></div>
-        <div class="step"><div class="sn">3</div><div class="sc"><h3>Instale o perfil</h3><p><span class="hl">Ajustes → Geral → VPN e Gerenciamento de Dispositivo</span>. Clique no perfil NextDNS e em Instalar.</p></div></div>
-        <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Sua proteção está ativa em todos os apps.</p></div></div>
-        <div class="note"><p><strong>Seguro:</strong> Não altera arquivos, fotos ou dados pessoais.</p></div>
-      </div>
-
-      <div class="steps" id="s-android">
-        <div class="step"><div class="sn">1</div><div class="sc"><h3>Configurações</h3><p>Abra <span class="hl">Configurações</span> do celular.</p></div></div>
-        <div class="step"><div class="sn">2</div><div class="sc"><h3>DNS Privado</h3><p><span class="hl">Rede e Internet → DNS Privado</span><br><span style="font-size:10px;color:#71717a">(ou Conexões → Mais configurações)</span></p></div></div>
-        <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite o endereço</h3><p>Selecione "Nome do host" e digite:</p><code>884789.dns.nextdns.io</code><p style="margin-top:4px">Clique <span class="hl">Salvar</span>.</p></div></div>
-        <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Funciona em todos os navegadores e apps.</p></div></div>
-        <div class="note"><p><strong>Seguro:</strong> Apenas muda o DNS. Não instala nada.</p></div>
-      </div>
-
-      <div class="steps" id="s-pc">
-        <div class="step"><div class="sn">1</div><div class="sc"><h3>Receba o arquivo</h3><p>O guardião vai te enviar um arquivo de extensão.</p></div></div>
-        <div class="step"><div class="sn">2</div><div class="sc"><h3>Abra o Chrome</h3><p>Digite na barra: <code>chrome://extensions</code></p><p style="margin-top:4px">Ative o <span class="hl">Modo do desenvolvedor</span></p></div></div>
-        <div class="step"><div class="sn">3</div><div class="sc"><h3>Carregue a extensão</h3><p>Clique <span class="hl">Carregar sem compactação</span> e selecione a pasta da extensão.</p></div></div>
-        <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>A proteção funciona silenciosamente no navegador.</p></div></div>
-        <div class="note"><p><strong>Seguro:</strong> Não acessa arquivos, senhas ou dados pessoais.</p></div>
-      </div>
-    </div>
-
-    <div class="verse">
-      <p id="v-text"></p>
-      <span id="v-ref"></span>
-    </div>
-    <div class="footer">Focus Shield — Proteção Digital</div>
+<div class="wrap">
+  <div class="header">
+    <div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <h1>Proteção Digital</h1>
+    <p class="sub">Siga os passos abaixo para ativar sua proteção.</p>
   </div>
+
+  <div class="status" id="status">
+    <div class="spinner"></div>
+    <p style="font-size:12px;color:#71717a">Validando link...</p>
+  </div>
+
+  <div id="content" style="display:none">
+    <div class="tabs">
+      <div class="tab on" onclick="showTab('iphone')" id="tab-iphone">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        iPhone
+      </div>
+      <div class="tab" onclick="showTab('android')" id="tab-android">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Android
+      </div>
+      <div class="tab" onclick="showTab('pc')" id="tab-pc">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        PC
+      </div>
+      <div class="tab" onclick="showTab('tablet')" id="tab-tablet">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Tablet
+      </div>
+    </div>
+
+    <!-- IPHONE -->
+    <div class="steps on" id="s-iphone">
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra o Safari</h3><p>Use o <span class="hl">Safari</span> — navegador da Apple. Outros navegadores não funcionam para este passo.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Acesse o link</h3><p>No Safari, acesse:</p><code>https://apple.nextdns.io</code><p style="margin-top:6px">No campo <span class="hl">Profile ID</span> digite: <code>884789</code><br>No campo <span class="hl">Device</span> coloque qualquer nome.<br>Clique em <span class="hl">Download</span>.</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Instale o perfil</h3><p>Vá em <span class="hl">Ajustes → Geral → VPN e Gerenciamento de Dispositivo</span>. Encontre o perfil NextDNS e clique em <span class="hl">Instalar</span>.</p></div></div>
+      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Sua proteção está ativa em <span class="hl">todos os apps e navegadores</span> do iPhone.</p></div></div>
+      <div class="note"><p><strong>Seguro:</strong> Não altera fotos, arquivos ou dados pessoais. Apenas filtra o DNS.</p></div>
+    </div>
+
+    <!-- ANDROID -->
+    <div class="steps" id="s-android">
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra as Configurações</h3><p>Abra <span class="hl">Configurações</span> do celular.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Encontre o DNS Privado</h3><p>Vá em <span class="hl">Rede e Internet → DNS Privado</span>.<br><span style="font-size:10px;color:#71717a">Em alguns celulares: Conexões → Mais configurações de conexão → DNS Privado</span></p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite o endereço</h3><p>Selecione <span class="hl">"Nome do host do provedor de DNS privado"</span> e digite:</p><code>884789.dns.nextdns.io</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
+      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Proteção ativa em <span class="hl">todos os navegadores e apps</span>.</p></div></div>
+      <div class="note"><p><strong>Seguro:</strong> Apenas muda o DNS. Não instala nada no celular.</p></div>
+    </div>
+
+    <!-- PC -->
+    <div class="steps" id="s-pc">
+      <div class="warn"><p>⚠️ <strong>Importante:</strong> Para proteção completa no PC, faça os DOIS passos abaixo. O Passo A protege o Chrome. O Passo B protege TODOS os navegadores.</p></div>
+
+      <p style="font-size:12px;font-weight:600;color:#10b981;margin:14px 0 8px">— PASSO A: Extensão no Chrome —</p>
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Receba o arquivo</h3><p>Seu guardião vai te enviar a pasta da extensão Focus Shield.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Abra o Chrome</h3><p>Na barra de endereço do Chrome, digite:</p><code>chrome://extensions</code><p style="margin-top:4px">Ative o <span class="hl">Modo do desenvolvedor</span> (canto superior direito).</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Carregue a extensão</h3><p>Clique em <span class="hl">Carregar sem compactação</span> e selecione a pasta da extensão.</p></div></div>
+
+      <p style="font-size:12px;font-weight:600;color:#10b981;margin:14px 0 8px">— PASSO B: NextDNS no Windows (todos os navegadores) —</p>
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra as Configurações</h3><p>Clique no menu <span class="hl">Iniciar → Configurações → Rede e Internet → Wi-Fi</span>.<br>Clique na sua rede Wi-Fi → <span class="hl">Propriedades</span>.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Edite o DNS</h3><p>Role até <span class="hl">Atribuição do servidor DNS</span> → clique em <span class="hl">Editar</span>.<br>Mude para <span class="hl">Manual</span> e ative o IPv4.</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite os endereços</h3><p>DNS preferencial:</p><code>45.90.28.215</code><p style="margin-top:4px">DNS alternativo:</p><code>45.90.30.215</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
+      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Agora <span class="hl">todos os navegadores</span> (Chrome, Edge, Firefox) estão protegidos.</p></div></div>
+      <div class="note"><p><strong>Seguro:</strong> Apenas muda o servidor DNS. Não instala nada no PC.</p></div>
+    </div>
+
+    <!-- TABLET -->
+    <div class="steps" id="s-tablet">
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Identifique seu tablet</h3><p>É um <span class="hl">iPad</span> (Apple) ou <span class="hl">Android</span>?<br>iPad: siga as instruções da aba <span class="hl">iPhone</span>.<br>Android: siga as instruções da aba <span class="hl">Android</span>.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>iPad — Perfil NextDNS</h3><p>No Safari acesse:</p><code>https://apple.nextdns.io</code><p style="margin-top:4px">ID: <code>884789</code> → Download → Instale o perfil em Ajustes.</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Android — DNS Privado</h3><p>Configurações → Rede → DNS Privado:<br></p><code>884789.dns.nextdns.io</code></div></div>
+      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Proteção ativa em todos os apps e navegadores.</p></div></div>
+    </div>
+  </div>
+
+  <div class="verse">
+    <p id="v-text"></p>
+    <span id="v-ref"></span>
+  </div>
+  <div class="footer">Focus Shield — Proteção Digital</div>
+</div>
 
 <script>
   const verses = [
@@ -112,38 +136,40 @@
     {t:"Venham a mim, todos os que estão cansados, e eu darei descanso.",r:"Mateus 11:28"},
     {t:"Deus é fiel e não permitirá que vocês sejam tentados além do que podem suportar.",r:"1 Coríntios 10:13"}
   ];
-  const v = verses[Math.floor(Math.random()*verses.length)];
-  document.getElementById('v-text').textContent = '"'+v.t+'"';
+  const v = verses[Math.floor(Math.random() * verses.length)];
+  document.getElementById('v-text').textContent = '"' + v.t + '"';
   document.getElementById('v-ref').textContent = v.r;
 
   function showTab(id) {
-    document.querySelectorAll('.steps').forEach(s=>s.classList.remove('on'));
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-    document.getElementById('s-'+id).classList.add('on');
-    document.getElementById('tab-'+id).classList.add('on');
+    document.querySelectorAll('.steps').forEach(s => s.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    document.getElementById('s-' + id).classList.add('on');
+    document.getElementById('tab-' + id).classList.add('on');
   }
 
-  // Validate token
   async function init() {
-    const path = window.location.pathname;
-    const token = path.split('/setup/')[1];
+    const token = new URLSearchParams(window.location.search).get('token');
     if (!token) { showContent(); return; }
     try {
-      const r = await fetch('/api/tokens/'+token+'/validate');
+      const r = await fetch('/api/validate-setup/' + token);
       if (r.ok) {
         const data = await r.json();
-        // Auto-select device tab
-        if (data.device_type) showTab(data.device_type);
-        // Mark token as used
-        fetch('/api/tokens/'+token+'/use', {method:'POST'});
+        // Salva que o setup foi acessado
+        await fetch('/api/setup-complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, nextdnsId: '884789' })
+        });
       }
       showContent();
-    } catch(e) { showContent(); }
+    } catch(e) {
+      showContent();
+    }
   }
 
   function showContent() {
-    document.getElementById('status').style.display='none';
-    document.getElementById('content').style.display='block';
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
   }
 
   init();
