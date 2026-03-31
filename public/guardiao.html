@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Focus Shield — Painel do Guardião</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070d0a;
+      --surface: #0f1a14;
+      --border: rgba(82,183,136,0.12);
+      --green: #52b788;
+      --green-dim: #2d6a4f;
+      --green-glow: rgba(82,183,136,0.15);
+      --text: #e8f0ec;
+      --text-dim: #7a9488;
+      --red: #e07070;
+      --gold: #c9a84c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; }
+
+    /* LOADING / ERRO */
+    #loading {
+      min-height:100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:16px;
+    }
+    .spinner {
+      width:32px; height:32px;
+      border:3px solid var(--border);
+      border-top-color:var(--green);
+      border-radius:50%;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* APP */
+    #app { display:none; }
+
+    .top-bar {
+      position:sticky; top:0; z-index:100;
+      background:rgba(7,13,10,0.92);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);
+      padding:14px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .top-left { display:flex; align-items:center; gap:10px; }
+    .top-logo {
+      width:34px; height:34px;
+      background:linear-gradient(135deg,var(--green-dim),var(--green));
+      border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .top-logo svg { width:18px; height:18px; fill:white; }
+    .top-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+    .top-badge { font-size:10px; color:var(--green); background:var(--green-glow); border-radius:6px; padding:2px 8px; font-weight:600; }
+    .guardian-name { font-size:12px; color:var(--text-dim); }
+
+    .content { padding:20px 16px; max-width:600px; margin:0 auto; padding-bottom:100px; }
+
+    /* STATS */
+    .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+    .stat-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; padding:18px 16px; position:relative; overflow:hidden;
+    }
+    .stat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,var(--green),transparent);
+    }
+    .stat-value { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--green); line-height:1; margin-bottom:4px; }
+    .stat-label { font-size:12px; color:var(--text-dim); }
+
+    /* SECTION */
+    .section-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:12px; }
+    .section-title span { color:var(--green); }
+
+    /* CARD */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; }
+
+    /* FORM */
+    .field-label { font-size:11px; color:var(--text-dim); margin-bottom:6px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; }
+    .field-input {
+      width:100%; background:var(--bg); border:1px solid var(--border);
+      border-radius:10px; padding:12px 14px; color:var(--text);
+      font-size:14px; font-family:'DM Sans',sans-serif; outline:none;
+      transition:border-color 0.2s; margin-bottom:12px;
+    }
+    .field-input:focus { border-color:var(--green); }
+
+    .btn-primary {
+      width:100%; background:linear-gradient(135deg,var(--green-dim),var(--green));
+      border:none; border-radius:10px; padding:14px;
+      color:white; font-size:14px; font-weight:600;
+      font-family:'Syne',sans-serif; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-primary:active { transform:scale(0.98); opacity:0.9; }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .btn-secondary {
+      background:var(--green-glow); border:1px solid var(--green);
+      border-radius:10px; padding:10px 16px;
+      color:var(--green); font-size:13px; font-weight:600;
+      font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s;
+    }
+
+    /* LINK RESULT */
+    .link-box {
+      background:var(--bg); border:1px solid var(--green);
+      border-radius:10px; padding:12px 14px;
+      font-size:12px; color:var(--green);
+      word-break:break-all; line-height:1.5;
+      margin-top:12px; display:none;
+    }
+    .btn-copy {
+      width:100%; background:var(--green-glow); border:1px solid var(--green);
+      border-radius:10px; padding:10px; color:var(--green);
+      font-size:13px; font-weight:600; cursor:pointer;
+      margin-top:8px; font-family:'DM Sans',sans-serif; display:none;
+    }
+
+    /* PROTEGIDOS */
+    .child-card {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:14px; padding:16px; margin-bottom:12px;
+    }
+    .child-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .child-name { font-size:14px; font-weight:600; }
+    .child-email { font-size:12px; color:var(--text-dim); margin-top:2px; }
+    .badge {
+      border-radius:8px; padding:4px 10px;
+      font-size:11px; font-weight:600; flex-shrink:0;
+    }
+    .badge-active { background:rgba(82,183,136,0.15); color:var(--green); }
+    .badge-pending { background:rgba(201,168,76,0.15); color:var(--gold); }
+    .badge-inactive { background:rgba(224,112,112,0.15); color:var(--red); }
+
+    .child-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .btn-action {
+      flex:1; min-width:120px;
+      border-radius:8px; padding:8px 12px;
+      font-size:12px; font-weight:600;
+      font-family:'DM Sans',sans-serif; cursor:pointer;
+      border:1px solid var(--border); background:rgba(255,255,255,0.03);
+      color:var(--text-dim); transition:all 0.2s;
+    }
+    .btn-action:hover { border-color:var(--green); color:var(--green); }
+    .btn-deactivate { border-color:rgba(224,112,112,0.3); color:var(--red); background:rgba(224,112,112,0.05); }
+
+    .empty { text-align:center; padding:32px 20px; color:var(--text-dim); font-size:14px; }
+
+    /* TABS */
+    .bottom-nav {
+      position:fixed; bottom:0; left:0; right:0;
+      background:rgba(7,13,10,0.96); backdrop-filter:blur(16px);
+      border-top:1px solid var(--border);
+      display:flex; padding:8px 0 calc(8px + env(safe-area-inset-bottom));
+    }
+    .nav-item {
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+      padding:8px 4px; cursor:pointer; border:none; background:none;
+      color:var(--text-dim); font-size:10px; font-family:'DM Sans',sans-serif;
+      transition:color 0.2s;
+    }
+    .nav-item.active { color:var(--green); }
+    .nav-item svg { width:22px; height:22px; }
+    .tab { display:none; }
+    .tab.active { display:block; }
+
+    /* TOAST */
+    .toast {
+      position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+      background:var(--green); color:white; border-radius:12px; padding:12px 20px;
+      font-size:14px; font-weight:600; opacity:0; transition:opacity 0.3s;
+      pointer-events:none; white-space:nowrap; z-index:999;
+    }
+    .toast.show { opacity:1; }
+    .toast.err { background:var(--red); }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p style="font-size:13px;color:#7a9488">Carregando painel...</p>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="top-bar">
+    <div class="top-left">
+      <div class="top-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z"/></svg>
+      </div>
+      <div>
+        <div class="top-title">Focus Shield</div>
+        <div class="guardian-name" id="guardian-name"></div>
+      </div>
+    </div>
+    <span class="top-badge">GUARDIÃO</span>
+  </div>
+
+  <div class="content">
+
+    <!-- TAB: PROTEGIDOS -->
+    <div class="tab active" id="tab-protegidos">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Protegidos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-ativos">0</div>
+          <div class="stat-label">Ativos</div>
+        </div>
+      </div>
+      <p class="section-title">🛡️ Meus <span>Protegidos</span></p>
+      <div id="children-list"></div>
+    </div>
+
+    <!-- TAB: NOVO PROTEGIDO -->
+    <div class="tab" id="tab-novo">
+      <p class="section-title">➕ Novo <span>Protegido</span></p>
+      <div class="card">
+        <div class="field-label">Nome do Protegido</div>
+        <input type="text" class="field-input" id="child-name" placeholder="Ex: João Silva">
+        <div class="field-label">Email do Protegido</div>
+        <input type="email" class="field-input" id="child-email" placeholder="joao@email.com">
+        <button class="btn-primary" id="btn-criar" onclick="criarProtegido()">Gerar Link de Pagamento</button>
+        <div class="link-box" id="payment-link-box"></div>
+        <button class="btn-copy" id="btn-copy-payment" onclick="copiarLink('payment')">📋 Copiar Link</button>
+        <p style="font-size:11px;color:#3f3f46;margin-top:10px;text-align:center">O protegido acessa o link, paga R$29,90 via PIX e ativa a proteção.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('protegidos', this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Protegidos
+    </button>
+    <button class="nav-item" onclick="switchTab('novo', this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      Novo
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const token = new URLSearchParams(window.location.search).get('token');
+  let guardianData = null;
+  let paymentLink = '';
+  let deactivateLink = '';
+
+  async function init() {
+    if (!token) {
+      document.getElementById('loading').innerHTML = '<p style="color:#e07070;font-size:14px">Link inválido. Solicite um novo link ao administrador.</p>';
+      return;
+    }
+    try {
+      const r = await fetch('/api/guardian/' + token);
+      if (!r.ok) {
+        document.getElementById('loading').innerHTML = '<p style="color:#e07070;font-size:14px">Guardião não encontrado. Solicite um novo link.</p>';
+        return;
+      }
+      guardianData = await r.json();
+      document.getElementById('guardian-name').textContent = guardianData.guardian.name;
+      renderChildren(guardianData.children);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    } catch(e) {
+      document.getElementById('loading').innerHTML = '<p style="color:#e07070;font-size:14px">Erro de conexão. Tente novamente.</p>';
+    }
+  }
+
+  function renderChildren(children) {
+    const ativos = children.filter(c => c.active == 1).length;
+    document.getElementById('stat-total').textContent = children.length;
+    document.getElementById('stat-ativos').textContent = ativos;
+
+    const el = document.getElementById('children-list');
+    if (children.length === 0) {
+      el.innerHTML = '<div class="empty">Nenhum protegido ainda.<br>Clique em "+ Novo" para adicionar.</div>';
+      return;
+    }
+
+    el.innerHTML = children.map(c => {
+      const statusClass = c.active ? 'badge-active' : (c.payment_status === 'approved' ? 'badge-active' : 'badge-pending');
+      const statusText = c.active ? 'Ativo' : 'Pendente';
+      return `
+        <div class="child-card">
+          <div class="child-header">
+            <div>
+              <div class="child-name">${c.name}</div>
+              <div class="child-email">${c.email || ''}</div>
+            </div>
+            <span class="badge ${statusClass}">${statusText}</span>
+          </div>
+          <div class="child-actions">
+            ${c.active ? `<button class="btn-action btn-deactivate" onclick="gerarDesativacao(${c.id})">🔓 Gerar Link Desativação</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function criarProtegido() {
+    const name = document.getElementById('child-name').value.trim();
+    const email = document.getElementById('child-email').value.trim();
+    if (!name || !email) { showToast('Preencha nome e email!', true); return; }
+
+    const btn = document.getElementById('btn-criar');
+    btn.textContent = 'Gerando...';
+    btn.disabled = true;
+
+    try {
+      const r = await fetch('/api/guardian/' + token + '/create-child', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+      const data = await r.json();
+      if (!r.ok) { showToast(data.error || 'Erro ao criar', true); return; }
+
+      paymentLink = data.paymentLink;
+      document.getElementById('payment-link-box').textContent = paymentLink;
+      document.getElementById('payment-link-box').style.display = 'block';
+      document.getElementById('btn-copy-payment').style.display = 'block';
+      document.getElementById('child-name').value = '';
+      document.getElementById('child-email').value = '';
+      showToast('✅ Link gerado! Copie e envie ao protegido.');
+
+      // Recarrega lista
+      const r2 = await fetch('/api/guardian/' + token);
+      const data2 = await r2.json();
+      renderChildren(data2.children);
+    } catch(e) {
+      showToast('Erro de conexão', true);
+    } finally {
+      btn.textContent = 'Gerar Link de Pagamento';
+      btn.disabled = false;
+    }
+  }
+
+  async function gerarDesativacao(childId) {
+    try {
+      const r = await fetch('/api/guardian/' + token + '/deactivate/' + childId, { method: 'POST' });
+      const data = await r.json();
+      if (!r.ok) { showToast(data.error || 'Erro', true); return; }
+      deactivateLink = data.deactivateLink;
+      navigator.clipboard.writeText(deactivateLink).then(() => {
+        showToast('🔓 Link de desativação copiado!');
+      }).catch(() => {
+        prompt('Copie o link de desativação:', deactivateLink);
+      });
+    } catch(e) {
+      showToast('Erro de conexão', true);
+    }
+  }
+
+  function copiarLink(type) {
+    const link = type === 'payment' ? paymentLink : deactivateLink;
+    navigator.clipboard.writeText(link).then(() => showToast('📋 Link copiado!'));
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function showToast(msg, isErr = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  init();
+</script>
+</body>
+</html>
