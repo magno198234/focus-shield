@@ -11,13 +11,11 @@ app.use(express.static('public'));
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN || '';
 const ADMIN_KEY = process.env.ADMIN_KEY || 'Pitaya251534@';
 
-// ─── CONEXÃO POSTGRESQL ───────────────────────────────────────────────────────
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// ─── CRIAR TABELAS ────────────────────────────────────────────────────────────
 async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS guardians (
@@ -29,7 +27,6 @@ async function initDB() {
       payment_id TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     );
-
     CREATE TABLE IF NOT EXISTS children (
       id SERIAL PRIMARY KEY,
       guardian_id INTEGER REFERENCES guardians(id),
@@ -41,7 +38,6 @@ async function initDB() {
       active INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW()
     );
-
     CREATE TABLE IF NOT EXISTS payments (
       id SERIAL PRIMARY KEY,
       guardian_id INTEGER,
@@ -52,7 +48,6 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW(),
       paid_at TIMESTAMP
     );
-
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
@@ -64,11 +59,9 @@ async function initDB() {
   console.log('✅ Tabelas verificadas/criadas');
 }
 
-// ─── CRIAR/ATUALIZAR ADMIN ────────────────────────────────────────────────────
 async function initAdmin() {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@focusshield.app';
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
   const { rows } = await pool.query('SELECT id FROM users WHERE email = $1', [adminEmail]);
   if (rows.length === 0) {
     await pool.query('INSERT INTO users (email, password, role) VALUES ($1, $2, $3)', [adminEmail, adminPassword, 'admin']);
@@ -79,7 +72,6 @@ async function initAdmin() {
   }
 }
 
-// ─── INICIAR ──────────────────────────────────────────────────────────────────
 async function start() {
   try {
     await initDB();
@@ -92,10 +84,7 @@ async function start() {
   }
 }
 
-// ════════════════════════════════════════════════════════════
-// ROTAS DO ADMIN
-// ════════════════════════════════════════════════════════════
-
+// ── LOGIN ──────────────────────────────────────────────────────────────────────
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -103,9 +92,7 @@ app.post('/api/login', async (req, res) => {
     if (rows.length === 0) return res.status(401).json({ error: 'Email ou senha inválidos' });
     const user = rows[0];
     res.json({
-      success: true,
-      role: user.role,
-      email: user.email,
+      success: true, role: user.role, email: user.email,
       token: Buffer.from(`${email}:${password}`).toString('base64'),
       adminKey: user.role === 'admin' ? ADMIN_KEY : null
     });
@@ -124,21 +111,17 @@ app.get('/api/me', async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, password]);
     if (rows.length === 0) return res.status(401).json({ error: 'Token inválido' });
     res.json({ email: rows[0].email, role: rows[0].role });
-  } catch {
-    res.status(401).json({ error: 'Token inválido' });
-  }
+  } catch { res.status(401).json({ error: 'Token inválido' }); }
 });
 
+// ── ADMIN: GUARDIÕES ───────────────────────────────────────────────────────────
 app.post('/api/admin/create-guardian', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   const { name, email } = req.body;
   if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
   const token = crypto.randomBytes(16).toString('hex');
   try {
-    const { rows } = await pool.query(
-      'INSERT INTO guardians (name, email, token, paid) VALUES ($1, $2, $3, 1) RETURNING id',
-      [name, email, token]
-    );
+    await pool.query('INSERT INTO guardians (name, email, token, paid) VALUES ($1, $2, $3, 1) RETURNING id', [name, email, token]);
     res.json({
       success: true,
       guardianToken: token,
@@ -147,9 +130,7 @@ app.post('/api/admin/create-guardian', async (req, res) => {
     });
   } catch (err) {
     console.error('Erro create-guardian:', err.message);
-    if (err.message.includes('unique') || err.message.includes('UNIQUE')) {
-      return res.status(400).json({ error: 'Email já cadastrado' });
-    }
+    if (err.message.includes('unique') || err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email já cadastrado' });
     res.status(500).json({ error: err.message });
   }
 });
@@ -165,13 +146,28 @@ app.get('/api/admin/guardians', async (req, res) => {
   }
 });
 
+// ── ADMIN: DELETAR GUARDIÃO ────────────────────────────────────────────────────
+app.delete('/api/admin/guardian/:id', async (req, res) => {
+  if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
+  try {
+    const { id } = req.params;
+    // Deleta pagamentos e filhos primeiro, depois o guardião
+    await pool.query('DELETE FROM payments WHERE guardian_id = $1', [id]);
+    await pool.query('DELETE FROM children WHERE guardian_id = $1', [id]);
+    await pool.query('DELETE FROM guardians WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Guardião deletado' });
+  } catch (err) {
+    console.error('Erro delete-guardian:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/payments', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const { rows } = await pool.query(`
       SELECT p.*, g.name as guardian_name, g.email
-      FROM payments p
-      JOIN guardians g ON g.id = p.guardian_id
+      FROM payments p JOIN guardians g ON g.id = p.guardian_id
       ORDER BY p.created_at DESC
     `);
     res.json(rows);
@@ -186,35 +182,26 @@ app.post('/api/admin/deactivate/:childId', async (req, res) => {
   try {
     const deactivateToken = crypto.randomBytes(16).toString('hex');
     await pool.query('UPDATE children SET deactivate_token = $1 WHERE id = $2', [deactivateToken, req.params.childId]);
-    res.json({
-      success: true,
-      deactivateLink: `${req.protocol}://${req.get('host')}/desativar.html?token=${deactivateToken}`
-    });
+    res.json({ success: true, deactivateLink: `${req.protocol}://${req.get('host')}/desativar.html?token=${deactivateToken}` });
   } catch (err) {
     console.error('Erro admin/deactivate:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ════════════════════════════════════════════════════════════
-// ROTAS DO GUARDIÃO
-// ════════════════════════════════════════════════════════════
-
+// ── GUARDIÃO ───────────────────────────────────────────────────────────────────
 app.get('/api/guardian/:token', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT id, name, email FROM guardians WHERE token = $1', [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Guardião não encontrado' });
     const guardian = rows[0];
-
     const { rows: children } = await pool.query(`
       SELECT c.id, c.name, c.email, c.active, c.nextdns_id, c.created_at,
              p.status as payment_status, p.amount
       FROM children c
       LEFT JOIN payments p ON p.child_id = c.id AND p.status = 'approved'
-      WHERE c.guardian_id = $1
-      ORDER BY c.created_at DESC
+      WHERE c.guardian_id = $1 ORDER BY c.created_at DESC
     `, [guardian.id]);
-
     res.json({ guardian, children });
   } catch (err) {
     console.error('Erro guardian/:token:', err.message);
@@ -226,19 +213,14 @@ app.post('/api/guardian/:token/create-child', async (req, res) => {
   try {
     const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE token = $1', [req.params.token]);
     if (gRows.length === 0) return res.status(404).json({ error: 'Guardião não encontrado' });
-    const guardianId = gRows[0].id;
-
     const { name, email } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
-
     const setupToken = crypto.randomBytes(16).toString('hex');
     const { rows } = await pool.query(
       'INSERT INTO children (guardian_id, name, email, setup_token) VALUES ($1, $2, $3, $4) RETURNING id',
-      [guardianId, name, email, setupToken]
+      [gRows[0].id, name, email, setupToken]
     );
-
-    const paymentLink = `${req.protocol}://${req.get('host')}/payment.html?token=${setupToken}`;
-    res.json({ success: true, childId: rows[0].id, paymentLink });
+    res.json({ success: true, childId: rows[0].id, paymentLink: `${req.protocol}://${req.get('host')}/payment.html?token=${setupToken}` });
   } catch (err) {
     console.error('Erro guardian/create-child:', err.message);
     res.status(500).json({ error: err.message });
@@ -249,57 +231,33 @@ app.post('/api/guardian/:token/deactivate/:childId', async (req, res) => {
   try {
     const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE token = $1', [req.params.token]);
     if (gRows.length === 0) return res.status(404).json({ error: 'Guardião não encontrado' });
-
-    const { rows: cRows } = await pool.query(
-      'SELECT id FROM children WHERE id = $1 AND guardian_id = $2',
-      [req.params.childId, gRows[0].id]
-    );
+    const { rows: cRows } = await pool.query('SELECT id FROM children WHERE id = $1 AND guardian_id = $2', [req.params.childId, gRows[0].id]);
     if (cRows.length === 0) return res.status(404).json({ error: 'Protegido não encontrado' });
-
     const deactivateToken = crypto.randomBytes(16).toString('hex');
     await pool.query('UPDATE children SET deactivate_token = $1 WHERE id = $2', [deactivateToken, req.params.childId]);
-
-    res.json({
-      success: true,
-      deactivateLink: `${req.protocol}://${req.get('host')}/desativar.html?token=${deactivateToken}`
-    });
+    res.json({ success: true, deactivateLink: `${req.protocol}://${req.get('host')}/desativar.html?token=${deactivateToken}` });
   } catch (err) {
     console.error('Erro guardian/deactivate:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ════════════════════════════════════════════════════════════
-// ROTAS DO PROTEGIDO
-// ════════════════════════════════════════════════════════════
-
+// ── PROTEGIDO ──────────────────────────────────────────────────────────────────
 app.post('/api/create-payment', async (req, res) => {
   const { token } = req.body;
   if (!token) return res.status(400).json({ error: 'Token obrigatório' });
-
   try {
     const { rows } = await pool.query(`
       SELECT c.*, g.name as guardian_name, g.email as guardian_email
-      FROM children c
-      JOIN guardians g ON g.id = c.guardian_id
+      FROM children c JOIN guardians g ON g.id = c.guardian_id
       WHERE c.setup_token = $1
     `, [token]);
-
     if (rows.length === 0) return res.status(404).json({ error: 'Link inválido' });
     const child = rows[0];
-
     console.log('💳 Criando pagamento para:', child.name, '| email:', child.email);
-
-    // Verifica se já pagou
-    const { rows: pRows } = await pool.query(
-      'SELECT * FROM payments WHERE child_id = $1 AND status = $2',
-      [child.id, 'approved']
-    );
+    const { rows: pRows } = await pool.query('SELECT * FROM payments WHERE child_id = $1 AND status = $2', [child.id, 'approved']);
     if (pRows.length > 0) return res.json({ status: 'already_paid' });
-
     const payerEmail = child.email || child.guardian_email;
-    console.log('📧 Email do pagador:', payerEmail);
-
     const idempotencyKey = crypto.randomBytes(16).toString('hex');
     const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
@@ -316,29 +274,18 @@ app.post('/api/create-payment', async (req, res) => {
         metadata: { child_id: child.id, setup_token: token }
       })
     });
-
     const mpData = await mpResponse.json();
-    console.log('📦 Resposta MP status:', mpResponse.status);
-
     if (!mpResponse.ok) {
       console.error('❌ Erro MP:', JSON.stringify(mpData));
       return res.status(500).json({ error: 'Erro ao criar pagamento', details: mpData });
     }
-
     await pool.query(
       'INSERT INTO payments (guardian_id, child_id, mp_payment_id, status, amount) VALUES ($1, $2, $3, $4, 29.90) ON CONFLICT (mp_payment_id) DO NOTHING',
       [child.guardian_id, child.id, String(mpData.id), mpData.status]
     );
-
     const qrData = mpData.point_of_interaction?.transaction_data;
     console.log('✅ PIX gerado para:', child.name);
-
-    res.json({
-      success: true,
-      payment_id: mpData.id,
-      pix_qr_code_base64: qrData?.qr_code_base64,
-      pix_copia_cola: qrData?.qr_code
-    });
+    res.json({ success: true, payment_id: mpData.id, pix_qr_code_base64: qrData?.qr_code_base64, pix_copia_cola: qrData?.qr_code });
   } catch (err) {
     console.error('❌ Erro create-payment:', err.message);
     res.status(500).json({ error: err.message });
@@ -350,13 +297,8 @@ app.get('/api/payment-status/:token', async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM children WHERE setup_token = $1', [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
     const child = rows[0];
-
-    const { rows: pRows } = await pool.query(
-      'SELECT * FROM payments WHERE child_id = $1 ORDER BY created_at DESC LIMIT 1',
-      [child.id]
-    );
+    const { rows: pRows } = await pool.query('SELECT * FROM payments WHERE child_id = $1 ORDER BY created_at DESC LIMIT 1', [child.id]);
     if (pRows.length === 0) return res.json({ status: 'pending' });
-
     const payment = pRows[0];
     if (payment.status !== 'approved') {
       const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${payment.mp_payment_id}`, {
@@ -369,7 +311,6 @@ app.get('/api/payment-status/:token', async (req, res) => {
         return res.json({ status: 'approved' });
       }
     }
-
     res.json({ status: payment.status });
   } catch (err) {
     console.error('Erro payment-status:', err.message);
@@ -380,16 +321,12 @@ app.get('/api/payment-status/:token', async (req, res) => {
 app.get('/api/validate-setup/:token', async (req, res) => {
   try {
     const { rows } = await pool.query(`
-      SELECT c.*, g.name as guardian_name
-      FROM children c
-      JOIN guardians g ON g.id = c.guardian_id
-      WHERE c.setup_token = $1
+      SELECT c.*, g.name as guardian_name FROM children c
+      JOIN guardians g ON g.id = c.guardian_id WHERE c.setup_token = $1
     `, [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
-    const child = rows[0];
-    res.json({ valid: true, childName: child.name, guardianName: child.guardian_name, active: child.active });
+    res.json({ valid: true, childName: rows[0].name, guardianName: rows[0].guardian_name, active: rows[0].active });
   } catch (err) {
-    console.error('Erro validate-setup:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -402,7 +339,6 @@ app.post('/api/setup-complete', async (req, res) => {
     await pool.query('UPDATE children SET nextdns_id = $1, active = 1 WHERE setup_token = $2', [nextdnsId, token]);
     res.json({ success: true, message: 'Configuração concluída!' });
   } catch (err) {
-    console.error('Erro setup-complete:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -410,15 +346,12 @@ app.post('/api/setup-complete', async (req, res) => {
 app.get('/api/validate-deactivate/:token', async (req, res) => {
   try {
     const { rows } = await pool.query(`
-      SELECT c.*, g.name as guardian_name
-      FROM children c
-      JOIN guardians g ON g.id = c.guardian_id
-      WHERE c.deactivate_token = $1
+      SELECT c.*, g.name as guardian_name FROM children c
+      JOIN guardians g ON g.id = c.guardian_id WHERE c.deactivate_token = $1
     `, [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Link inválido ou já utilizado' });
     res.json({ valid: true, childName: rows[0].name, guardianName: rows[0].guardian_name });
   } catch (err) {
-    console.error('Erro validate-deactivate:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -431,7 +364,6 @@ app.post('/api/deactivate', async (req, res) => {
     await pool.query('UPDATE children SET active = 0, deactivate_token = NULL WHERE deactivate_token = $1', [token]);
     res.json({ success: true, message: 'Proteção desativada' });
   } catch (err) {
-    console.error('Erro deactivate:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
