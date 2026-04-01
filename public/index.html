@@ -11,8 +11,8 @@
     ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:3px}
     button{cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
     button:hover{opacity:0.88;transform:translateY(-1px)}
-    input{font-family:'Outfit',sans-serif;outline:none}
-    input:focus{border-color:rgba(16,185,129,0.3)!important}
+    input,textarea{font-family:'Outfit',sans-serif;outline:none}
+    input:focus,textarea:focus{border-color:rgba(16,185,129,0.3)!important}
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     .fade{animation:fadeIn 0.3s ease}
     .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -91,6 +91,7 @@
     <div class="nav" data-page="questionnaire" onclick="goPage('questionnaire',this)">💛 Questionário</div>
     <div class="nav-label" id="admin-label" style="display:none">Administrador</div>
     <div class="nav" id="nav-guardians" data-page="guardians" onclick="goPage('guardians',this)" style="display:none">👥 Guardiões</div>
+    <div class="nav" id="nav-orgs" data-page="orgs" onclick="goPage('orgs',this)" style="display:none">⛪ Igrejas</div>
     <div class="nav" id="nav-payments" data-page="payments" onclick="goPage('payments',this)" style="display:none">💰 Pagamentos</div>
     <div class="nav" id="nav-filters" data-page="filters" onclick="goPage('filters',this)" style="display:none">⚙️ Filtros</div>
     <div class="sidebar-footer">
@@ -105,17 +106,17 @@
     <div class="page fade" id="pg-dashboard">
       <h1>Dashboard</h1><p class="psub">Visão geral do sistema</p>
       <div class="stats">
-        <div class="stat"><div class="stat-n" style="color:#10b981" id="s-guardians">0</div><div class="stat-l">Guardiões</div></div>
+        <div class="stat"><div class="stat-n" style="color:#10b981" id="s-guardians">0</div><div class="stat-l">Meus Guardiões</div></div>
         <div class="stat"><div class="stat-n" style="color:#3b82f6" id="s-pagos">0</div><div class="stat-l">Pagos</div></div>
-        <div class="stat"><div class="stat-n" style="color:#f59e0b" id="s-pendentes">0</div><div class="stat-l">Pendentes</div></div>
+        <div class="stat"><div class="stat-n" style="color:#f59e0b" id="s-orgs">0</div><div class="stat-l">Igrejas</div></div>
         <div class="stat"><div class="stat-n" style="color:#8b5cf6" id="s-pagamentos">0</div><div class="stat-l">Pagamentos</div></div>
       </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <span style="font-size:13px;font-weight:600">Guardiões Recentes</span>
+          <span style="font-size:13px;font-weight:600">Meus Guardiões Recentes</span>
           <button class="btn btn-p" onclick="goPage('guardians',document.querySelector('[data-page=guardians]'))">+ Novo</button>
         </div>
-        <div id="dashboard-list"><p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Carregando...</p></div>
+        <div id="dashboard-list"></div>
       </div>
     </div>
 
@@ -128,7 +129,6 @@
           <input class="inp" id="gen-name" placeholder="Ex: João Silva">
           <label>Email do Guardião</label>
           <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
-          <p style="font-size:10px;color:#3f3f46;margin-top:10px">O guardião clica no link e acessa o painel diretamente, sem senha.</p>
           <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link do Guardião</button>
         </div>
         <div id="gen-result" style="display:none">
@@ -138,7 +138,6 @@
             <span style="flex:1" id="gen-url"></span>
             <button onclick="copyL()" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button>
           </div>
-          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o guardião. Ele abrirá o painel sem precisar de senha.</p>
           <button class="btn btn-s" style="margin-top:12px" onclick="clearGen()">Gerar Novo</button>
         </div>
       </div>
@@ -148,24 +147,22 @@
     <div class="page fade" id="pg-questionnaire" style="display:none">
       <h1>Questionário de Reflexão</h1><p class="psub">Visualize o que aparece antes da desativação</p>
       <div style="display:flex;gap:12px;max-width:480px">
-        <div class="card" style="flex:1;text-align:center;cursor:pointer">
+        <div class="card" style="flex:1;text-align:center">
           <div style="font-size:24px;margin-bottom:6px">♂</div>
           <div style="font-size:13px;font-weight:600;color:#3b82f6">Masculino</div>
-          <p style="font-size:10px;color:#52525b;margin:6px 0">Versículos sobre força e propósito</p>
-          <button class="btn btn-p" style="background:linear-gradient(135deg,#3b82f6,#2563eb)" onclick="showQ('male')">Ver</button>
+          <button class="btn btn-p" style="background:linear-gradient(135deg,#3b82f6,#2563eb);margin-top:8px" onclick="showQ('male')">Ver</button>
         </div>
-        <div class="card" style="flex:1;text-align:center;cursor:pointer">
+        <div class="card" style="flex:1;text-align:center">
           <div style="font-size:24px;margin-bottom:6px">♀</div>
           <div style="font-size:13px;font-weight:600;color:#ec4899">Feminino</div>
-          <p style="font-size:10px;color:#52525b;margin:6px 0">Versículos sobre valor e identidade</p>
-          <button class="btn btn-p" style="background:linear-gradient(135deg,#ec4899,#db2777)" onclick="showQ('female')">Ver</button>
+          <button class="btn btn-p" style="background:linear-gradient(135deg,#ec4899,#db2777);margin-top:8px" onclick="showQ('female')">Ver</button>
         </div>
       </div>
     </div>
 
     <!-- GUARDIANS -->
     <div class="page fade" id="pg-guardians" style="display:none">
-      <h1>Guardiões</h1><p class="psub">Gerencie os guardiões do sistema</p>
+      <h1>Meus Guardiões</h1><p class="psub">Gerencie seus guardiões</p>
       <div class="card" style="max-width:520px">
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">Novo Guardião</div>
         <input class="inp" id="g-name" placeholder="Nome completo">
@@ -182,6 +179,42 @@
       <div class="card" style="max-width:520px">
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">Guardiões Ativos</div>
         <div id="guardians-list"></div>
+      </div>
+    </div>
+
+    <!-- IGREJAS -->
+    <div class="page fade" id="pg-orgs" style="display:none">
+      <h1>Igrejas Parceiras</h1><p class="psub">Gerencie as igrejas parceiras</p>
+      <div class="card" style="max-width:560px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Cadastrar Nova Igreja</div>
+        <label>Nome da Igreja</label>
+        <input class="inp" id="org-name" placeholder="Ex: Igreja Batista Central">
+        <label>Nome do Pastor Responsável</label>
+        <input class="inp" id="org-pastor" placeholder="Ex: Pastor João Silva">
+        <label>Email</label>
+        <input class="inp" id="org-email" placeholder="contato@igreja.com">
+        <label>Telefone</label>
+        <input class="inp" id="org-phone" placeholder="(31) 99999-9999">
+        <label>Endereço</label>
+        <input class="inp" id="org-address" placeholder="Rua, número, cidade">
+        <label>CNPJ ou CPF</label>
+        <input class="inp" id="org-document" placeholder="00.000.000/0000-00">
+        <label>Token Mercado Pago (opcional)</label>
+        <input class="inp" id="org-mp" placeholder="APP_USR-... (para split de pagamento)">
+        <p style="font-size:10px;color:#3f3f46;margin-top:6px">Se não informado, o pagamento cai na sua conta e você repassa manualmente.</p>
+        <button class="btn btn-p" style="margin-top:12px" onclick="addOrg()">⛪ Cadastrar Igreja</button>
+        <div id="org-link-result" style="display:none;margin-top:12px">
+          <label>Link do Painel da Igreja</label>
+          <div class="link-box" style="margin-top:6px">
+            <span style="flex:1" id="org-link"></span>
+            <button onclick="copyOrgLink()" style="background:none;border:none;color:#34d399;font-size:14px">📋</button>
+          </div>
+          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para a igreja. Ela acessa o painel sem senha.</p>
+        </div>
+      </div>
+      <div class="card" style="max-width:560px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Igrejas Cadastradas</div>
+        <div id="orgs-list"></div>
       </div>
     </div>
 
@@ -218,6 +251,7 @@ let user = null;
 let adminKey = null;
 let genUrl = '';
 let lastGuardianLink = '';
+let lastOrgLink = '';
 
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -226,8 +260,7 @@ async function doLogin() {
   errEl.style.display = 'none';
   try {
     const r = await fetch('/api/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({email, password: pass})
     });
     if (!r.ok) { errEl.style.display = 'block'; return; }
@@ -235,8 +268,7 @@ async function doLogin() {
     adminKey = user.adminKey || pass;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'flex';
-    setupUI();
-    loadDashboard();
+    setupUI(); loadDashboard();
   } catch(e) { errEl.style.display = 'block'; }
 }
 
@@ -252,6 +284,7 @@ function setupUI() {
   if (user.role === 'admin') {
     document.getElementById('admin-label').style.display = '';
     document.getElementById('nav-guardians').style.display = '';
+    document.getElementById('nav-orgs').style.display = '';
     document.getElementById('nav-payments').style.display = '';
     document.getElementById('nav-filters').style.display = '';
   }
@@ -265,29 +298,30 @@ function goPage(id, el) {
   if (id === 'dashboard') loadDashboard();
   if (id === 'guardians') loadGuardians();
   if (id === 'payments') loadPayments();
+  if (id === 'orgs') loadOrgs();
   if (id === 'generate') clearGen();
 }
 
 async function loadDashboard() {
   try {
-    const [guardians, payments] = await Promise.all([
+    const [guardians, payments, orgs] = await Promise.all([
       fetch('/api/admin/guardians', {headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
-      fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}}).then(r=>r.json())
+      fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
+      fetch('/api/admin/orgs', {headers:{'x-admin-key':adminKey}}).then(r=>r.json())
     ]);
     document.getElementById('s-guardians').textContent = guardians.length;
     document.getElementById('s-pagos').textContent = guardians.filter(g=>g.paid==1).length;
-    document.getElementById('s-pendentes').textContent = guardians.filter(g=>g.paid==0).length;
+    document.getElementById('s-orgs').textContent = orgs.length;
     document.getElementById('s-pagamentos').textContent = payments.length;
     let h = '';
     if (!guardians.length) {
       h = '<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';
     } else {
-      guardians.slice(0,10).forEach(g => {
+      guardians.slice(0,8).forEach(g => {
         const c = g.paid ? '#10b981' : '#f59e0b';
-        const t = g.paid ? 'Ativo' : 'Pendente';
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:12px">${g.name}</div><div style="font-size:10px;color:#52525b">${g.email}</div></div>
-          <span style="font-size:9px;font-weight:600;color:${c}">${t}</span></div>`;
+          <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'Ativo':'Pendente'}</span></div>`;
       });
     }
     document.getElementById('dashboard-list').innerHTML = h;
@@ -300,12 +334,11 @@ async function genLink() {
   if (!name || !email) { notify('Preencha nome e email', true); return; }
   try {
     const r = await fetch('/api/admin/create-guardian', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','x-admin-key':adminKey},
+      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
       body: JSON.stringify({name, email})
     });
     const data = await r.json();
-    if (!r.ok) { notify(data.error || 'Erro ao gerar link', true); return; }
+    if (!r.ok) { notify(data.error || 'Erro', true); return; }
     genUrl = data.guardianLink;
     document.getElementById('gen-label').textContent = '✅ Link gerado para ' + name;
     document.getElementById('gen-url').textContent = genUrl;
@@ -340,11 +373,10 @@ async function loadGuardians() {
     } else {
       gs.forEach(g => {
         const c = g.paid ? '#10b981' : '#f59e0b';
-        const t = g.paid ? '✅ Ativo' : '⏳ Pendente';
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:9px;font-weight:600;color:${c}">${t}</span>
+            <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'✅ Ativo':'⏳ Pendente'}</span>
             <button onclick="deleteGuardian(${g.id},'${g.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button>
           </div></div>`;
       });
@@ -356,10 +388,7 @@ async function loadGuardians() {
 async function deleteGuardian(id, name) {
   if (!confirm('Deletar guardião ' + name + '?')) return;
   try {
-    const r = await fetch('/api/admin/guardian/' + id, {
-      method: 'DELETE',
-      headers: {'x-admin-key': adminKey}
-    });
+    const r = await fetch('/api/admin/guardian/' + id, {method:'DELETE', headers:{'x-admin-key':adminKey}});
     const data = await r.json();
     if (r.ok) { notify('Guardião deletado!'); loadGuardians(); loadDashboard(); }
     else notify(data.error || 'Erro ao deletar', true);
@@ -372,24 +401,99 @@ async function addGuardian() {
   if (!n || !e) { notify('Preencha nome e email', true); return; }
   try {
     const r = await fetch('/api/admin/create-guardian', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','x-admin-key':adminKey},
+      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
       body: JSON.stringify({name:n, email:e})
     });
     const data = await r.json();
-    if (!r.ok) { notify(data.error || 'Erro ao criar', true); return; }
+    if (!r.ok) { notify(data.error || 'Erro', true); return; }
     lastGuardianLink = data.guardianLink;
     document.getElementById('g-setup-link').textContent = lastGuardianLink;
     document.getElementById('guardian-link-result').style.display = 'block';
     document.getElementById('g-name').value = '';
     document.getElementById('g-email').value = '';
-    notify('Guardião criado! Copie o link.');
+    notify('Guardião criado!');
     loadGuardians();
   } catch(e) { notify('Erro ao criar guardião', true); }
 }
 
 function copyGLink() {
   navigator.clipboard.writeText(lastGuardianLink).then(() => notify('Link copiado!'));
+}
+
+// ── IGREJAS ────────────────────────────────────────────────────────────────────
+async function loadOrgs() {
+  try {
+    const r = await fetch('/api/admin/orgs', {headers:{'x-admin-key':adminKey}});
+    const orgs = await r.json();
+    let h = '';
+    if (!orgs.length) {
+      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhuma igreja cadastrada</p>';
+    } else {
+      orgs.forEach(o => {
+        h += `<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:#fafafa">⛪ ${o.name}</div>
+              <div style="font-size:11px;color:#71717a;margin-top:2px">Pastor: ${o.pastor}</div>
+              <div style="font-size:10px;color:#52525b">${o.email}</div>
+            </div>
+            <button onclick="deleteOrg(${o.id},'${o.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px">
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#10b981">${o.total_guardians}</div><div style="font-size:9px;color:#52525b">Guardiões</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#3b82f6">${o.total_children}</div><div style="font-size:9px;color:#52525b">Protegidos</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#f59e0b">${o.total_payments}</div><div style="font-size:9px;color:#52525b">Pagamentos</div></div>
+          </div>
+        </div>`;
+      });
+    }
+    document.getElementById('orgs-list').innerHTML = h;
+  } catch(e) {}
+}
+
+async function addOrg() {
+  const name = document.getElementById('org-name').value.trim();
+  const pastor = document.getElementById('org-pastor').value.trim();
+  const email = document.getElementById('org-email').value.trim();
+  const phone = document.getElementById('org-phone').value.trim();
+  const address = document.getElementById('org-address').value.trim();
+  const document_ = document.getElementById('org-document').value.trim();
+  const mp_token = document.getElementById('org-mp').value.trim();
+  if (!name || !pastor || !email) { notify('Nome, pastor e email obrigatórios', true); return; }
+  try {
+    const r = await fetch('/api/admin/create-org', {
+      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
+      body: JSON.stringify({name, pastor, email, phone, address, document: document_, mp_token})
+    });
+    const data = await r.json();
+    if (!r.ok) { notify(data.error || 'Erro', true); return; }
+    lastOrgLink = data.orgLink;
+    document.getElementById('org-link').textContent = lastOrgLink;
+    document.getElementById('org-link-result').style.display = 'block';
+    document.getElementById('org-name').value = '';
+    document.getElementById('org-pastor').value = '';
+    document.getElementById('org-email').value = '';
+    document.getElementById('org-phone').value = '';
+    document.getElementById('org-address').value = '';
+    document.getElementById('org-document').value = '';
+    document.getElementById('org-mp').value = '';
+    notify('Igreja cadastrada!');
+    loadOrgs();
+  } catch(e) { notify('Erro ao cadastrar igreja', true); }
+}
+
+function copyOrgLink() {
+  navigator.clipboard.writeText(lastOrgLink).then(() => notify('Link copiado!'));
+}
+
+async function deleteOrg(id, name) {
+  if (!confirm('Deletar igreja ' + name + '? Isso remove todos os guardiões e protegidos dela.')) return;
+  try {
+    const r = await fetch('/api/admin/org/' + id, {method:'DELETE', headers:{'x-admin-key':adminKey}});
+    const data = await r.json();
+    if (r.ok) { notify('Igreja deletada!'); loadOrgs(); loadDashboard(); }
+    else notify(data.error || 'Erro', true);
+  } catch(e) { notify('Erro ao deletar', true); }
 }
 
 async function loadPayments() {
@@ -405,7 +509,7 @@ async function loadPayments() {
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${p.guardian_name}</div><div style="font-size:9px;color:#52525b">${p.email}</div></div>
           <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div>
-          <div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅ Aprovado':'⏳ Pendente'}</div></div></div>`;
+          <div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅':'⏳'}</div></div></div>`;
       });
     }
     document.getElementById('payments-list').innerHTML = h;
@@ -414,35 +518,34 @@ async function loadPayments() {
 
 function showQ(gender) {
   const male = [
-    {q:"Você já conversou com alguém de confiança sobre o que está sentindo?",v:null},
-    {q:"Pense na sua família. Eles acreditam em você.",v:{t:"Não temas, porque eu sou contigo; eu te fortaleço e te ajudo.",r:"Isaías 41:10"}},
-    {q:"Deus conhece sua luta. Ele não te condena. Ele te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},
-    {q:"Tem certeza que deseja desativar sua proteção?",v:null,final:true}
+    {q:"Você já conversou com alguém de confiança?",v:null},
+    {q:"Pense nas pessoas que te amam.",v:{t:"Não temas, porque eu sou contigo.",r:"Isaías 41:10"}},
+    {q:"Deus te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},
+    {q:"Tem certeza que deseja desativar?",v:null,final:true}
   ];
   const female = [
-    {q:"Você já conversou com alguém de confiança sobre o que está sentindo?",v:null},
-    {q:"Pense no seu valor. Você é amada, é filha de Deus.",v:{t:"Venham a mim, todos os que estão cansados, e eu darei descanso.",r:"Mateus 11:28"}},
-    {q:"Jesus te ama como você é. Ele quer te dar vida plena.",v:{t:"Se o Filho os libertar, vocês de fato serão livres.",r:"João 8:36"}},
-    {q:"Tem certeza que deseja desativar sua proteção?",v:null,final:true}
+    {q:"Você já conversou com alguém de confiança?",v:null},
+    {q:"Você é amada, filha de Deus.",v:{t:"Venham a mim todos os que estão cansados.",r:"Mateus 11:28"}},
+    {q:"Jesus te ama como você é.",v:{t:"Se o Filho os libertar, serão livres.",r:"João 8:36"}},
+    {q:"Tem certeza que deseja desativar?",v:null,final:true}
   ];
   const steps = gender === 'male' ? male : female;
   let step = 0;
   function render() {
     const s = steps[step];
-    let h = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <span style="font-size:9px;color:#52525b;text-transform:uppercase">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span>
-      <span style="cursor:pointer;color:#52525b;font-size:16px" onclick="document.getElementById('q-modal').classList.remove('show')">&times;</span></div>`;
-    if (s.v) h += `<div style="padding:10px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
-      <p style="font-size:12px;color:#a1a1aa;font-style:italic;line-height:1.5">"${s.v.t}"</p><span style="font-size:9px;color:#10b981;font-weight:600">${s.v.r}</span></div>`;
-    h += `<h3 style="font-size:14px;font-weight:600;color:#fafafa;line-height:1.4;margin-bottom:14px">${s.q}</h3>`;
+    let h = `<div style="display:flex;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:9px;color:#52525b">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span>
+      <span style="cursor:pointer;color:#52525b" onclick="document.getElementById('q-modal').classList.remove('show')">&times;</span></div>`;
+    if (s.v) h += `<div style="padding:10px;background:rgba(16,185,129,0.06);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
+      <p style="font-size:12px;color:#a1a1aa;font-style:italic">"${s.v.t}"</p><span style="font-size:9px;color:#10b981">${s.v.r}</span></div>`;
+    h += `<h3 style="font-size:14px;font-weight:600;color:#fafafa;margin-bottom:14px">${s.q}</h3>`;
     if (s.final) {
-      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').classList.remove('show')">Não, quero continuar protegid${gender==='male'?'o':'a'}!</button>`;
+      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').classList.remove('show')">Não, continuar protegido!</button>`;
       h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').classList.remove('show')">Sim, desativar</button>`;
     } else {
-      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Isso me faz querer continuar</button>`;
-      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar mais</button>`;
+      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Quero continuar</button>`;
+      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar</button>`;
     }
-    h += `<div style="display:flex;gap:3px;justify-content:center;margin-top:16px">${steps.map((_,i)=>`<div style="width:${i===step?16:5}px;height:3px;border-radius:2px;background:${i===step?'#10b981':'rgba(255,255,255,0.08)'};transition:all 0.3s"></div>`).join('')}</div>`;
     document.getElementById('q-content').innerHTML = h;
   }
   window.nextQ = () => { if(step < steps.length-1){step++;render();} };
