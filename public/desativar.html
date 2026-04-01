@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Shield — Desativação</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Outfit',sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .wrap{max-width:420px;width:100%;text-align:center}
+    .shield{width:56px;height:56px;margin:0 auto 14px;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.04));border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(239,68,68,0.25)}
+    .shield svg{width:26px;height:26px;color:#ef4444}
+    h1{font-size:20px;font-weight:700;margin-bottom:4px}
+    .sub{font-size:13px;color:#71717a;margin-bottom:24px;line-height:1.5}
+    .spinner{width:32px;height:32px;border:3px solid rgba(16,185,129,0.2);border-top:3px solid #10b981;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fade{animation:fadeIn 0.4s ease}
+
+    /* QUESTIONÁRIO */
+    .q-box{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:16px;text-align:left}
+    .q-step{font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px}
+    .q-verse{padding:10px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981}
+    .q-verse p{font-size:12px;color:#a1a1aa;font-style:italic;line-height:1.5}
+    .q-verse span{font-size:9px;color:#10b981;font-weight:600;display:block;margin-top:4px}
+    .q-text{font-size:15px;font-weight:600;color:#fafafa;line-height:1.4;margin-bottom:16px}
+    .btn-stay{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(16,185,129,0.3);background:rgba(16,185,129,0.1);color:#34d399;font-size:13px;font-weight:600;margin-bottom:8px;font-family:'Outfit',sans-serif}
+    .btn-stay:hover{background:rgba(16,185,129,0.2)}
+    .btn-next{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#71717a;font-size:13px;font-weight:500;font-family:'Outfit',sans-serif}
+    .btn-deactivate{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif}
+    .btn-deactivate:hover{background:rgba(239,68,68,0.15)}
+    .dots{display:flex;gap:4px;justify-content:center;margin-top:16px}
+    .dot{height:3px;border-radius:2px;background:rgba(255,255,255,0.08);transition:all 0.3s}
+
+    /* CONFIRMADO */
+    .confirmed{text-align:center;padding:20px}
+    .confirmed .icon{font-size:48px;margin-bottom:12px}
+
+    .verse{margin-top:20px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}
+    .verse p{font-size:12px;color:#71717a;font-style:italic}
+    .verse span{font-size:10px;color:#10b981;font-weight:600;display:block;margin-top:4px}
+    .footer{margin-top:20px;font-size:9px;color:#27272a;text-transform:uppercase;letter-spacing:0.1em}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="shield">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </div>
+  <h1>Desativação de Proteção</h1>
+  <p class="sub" id="sub-text">Verificando link...</p>
+
+  <!-- LOADING -->
+  <div id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- QUESTIONÁRIO -->
+  <div id="questionnaire" style="display:none" class="fade">
+    <div class="q-box">
+      <div class="q-step" id="q-step"></div>
+      <div id="q-verse"></div>
+      <p class="q-text" id="q-text"></p>
+      <button class="btn-stay" id="btn-stay" onclick="nextStep()"></button>
+      <button class="btn-next" id="btn-next" onclick="nextStep()"></button>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <!-- CONFIRMAÇÃO FINAL -->
+  <div id="final-confirm" style="display:none" class="fade">
+    <div class="q-box">
+      <div class="q-step">Última etapa</div>
+      <p class="q-text" style="color:#ef4444">Tem certeza que deseja desativar sua proteção?</p>
+      <p style="font-size:12px;color:#71717a;margin-bottom:16px;line-height:1.5">Seu guardião foi notificado para gerar este link. Você pode reativar sua proteção a qualquer momento.</p>
+      <button class="btn-stay" onclick="cancelDeactivation()">Não, quero continuar protegido!</button>
+      <button class="btn-deactivate" style="margin-top:8px" onclick="confirmDeactivation()">Sim, desativar proteção</button>
+    </div>
+  </div>
+
+  <!-- DESATIVADO -->
+  <div id="deactivated" style="display:none" class="fade">
+    <div class="confirmed">
+      <div class="icon">🔓</div>
+      <h2 style="font-size:18px;color:#ef4444;margin-bottom:8px">Proteção desativada</h2>
+      <p style="font-size:13px;color:#a1a1aa;line-height:1.5">Sua proteção foi desativada. Lembre-se que seu guardião está cuidando de você com amor. 🙏</p>
+    </div>
+  </div>
+
+  <!-- CANCELADO -->
+  <div id="cancelled" style="display:none" class="fade">
+    <div class="confirmed">
+      <div class="icon">🛡️</div>
+      <h2 style="font-size:18px;color:#10b981;margin-bottom:8px">Você escolheu bem!</h2>
+      <p style="font-size:13px;color:#a1a1aa;line-height:1.5">Sua proteção continua ativa. Deus tem um propósito incrível para sua vida!</p>
+    </div>
+  </div>
+
+  <!-- ERRO -->
+  <div id="error" style="display:none">
+    <p style="font-size:13px;color:#ef4444">Link inválido ou já utilizado. Solicite um novo link ao seu guardião.</p>
+  </div>
+
+  <div class="verse">
+    <p id="v-text"></p>
+    <span id="v-ref"></span>
+  </div>
+  <div class="footer">Focus Shield — Proteção Digital</div>
+</div>
+
+<script>
+const verses = [
+  {t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"},
+  {t:"Não temas, porque eu sou contigo; eu te fortaleço e te ajudo.",r:"Isaías 41:10"},
+  {t:"Se o Filho os libertar, vocês de fato serão livres.",r:"João 8:36"},
+  {t:"Venham a mim, todos os que estão cansados, e eu darei descanso.",r:"Mateus 11:28"},
+  {t:"Deus é fiel e não permitirá que sejam tentados além do que podem suportar.",r:"1 Coríntios 10:13"}
+];
+
+const v = verses[Math.floor(Math.random() * verses.length)];
+document.getElementById('v-text').textContent = '"' + v.t + '"';
+document.getElementById('v-ref').textContent = v.r;
+
+const token = new URLSearchParams(window.location.search).get('token');
+let childName = '';
+let currentStep = 0;
+
+const steps = [
+  {
+    q: "Você já conversou com alguém de confiança sobre o que está sentindo?",
+    verse: null,
+    stay: "Sim, já conversei e quero continuar protegido",
+    next: "Preciso pensar mais sobre isso"
+  },
+  {
+    q: "Pense nas pessoas que te amam e acreditam em você.",
+    verse: {t: "Não temas, porque eu sou contigo; eu te fortaleço e te ajudo.", r: "Isaías 41:10"},
+    stay: "Isso me faz querer continuar protegido",
+    next: "Preciso pensar mais"
+  },
+  {
+    q: "Deus conhece sua luta. Ele não te condena — Ele te fortalece.",
+    verse: {t: "Tudo posso naquele que me fortalece.", r: "Filipenses 4:13"},
+    stay: "Quero continuar com a proteção ativa",
+    next: "Mesmo assim quero desativar"
+  }
+];
+
+async function init() {
+  if (!token) {
+    showError();
+    return;
+  }
+  try {
+    const r = await fetch('/api/validate-deactivate/' + token);
+    if (!r.ok) { showError(); return; }
+    const data = await r.json();
+    childName = data.childName;
+    document.getElementById('sub-text').textContent = `Olá, ${childName}. Antes de continuar, responda algumas perguntas.`;
+    document.getElementById('loading').style.display = 'none';
+    renderStep();
+    document.getElementById('questionnaire').style.display = 'block';
+  } catch(e) {
+    showError();
+  }
+}
+
+function renderStep() {
+  const s = steps[currentStep];
+  document.getElementById('q-step').textContent = `Pergunta ${currentStep + 1} de ${steps.length}`;
+  document.getElementById('q-text').textContent = s.q;
+  document.getElementById('btn-stay').textContent = s.stay;
+  document.getElementById('btn-next').textContent = s.next;
+
+  const verseEl = document.getElementById('q-verse');
+  if (s.verse) {
+    verseEl.innerHTML = `<div class="q-verse"><p>"${s.verse.t}"</p><span>${s.verse.r}</span></div>`;
+  } else {
+    verseEl.innerHTML = '';
+  }
+
+  // Dots
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = steps.map((_, i) =>
+    `<div class="dot" style="width:${i===currentStep?16:5}px;background:${i===currentStep?'#10b981':'rgba(255,255,255,0.08)'}"></div>`
+  ).join('');
+}
+
+function nextStep() {
+  currentStep++;
+  if (currentStep >= steps.length) {
+    document.getElementById('questionnaire').style.display = 'none';
+    document.getElementById('final-confirm').style.display = 'block';
+  } else {
+    renderStep();
+  }
+}
+
+function cancelDeactivation() {
+  document.getElementById('questionnaire').style.display = 'none';
+  document.getElementById('final-confirm').style.display = 'none';
+  document.getElementById('cancelled').style.display = 'block';
+  document.getElementById('sub-text').textContent = 'Você fez a escolha certa! 🙏';
+}
+
+async function confirmDeactivation() {
+  try {
+    const r = await fetch('/api/deactivate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token})
+    });
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('final-confirm').style.display = 'none';
+      document.getElementById('deactivated').style.display = 'block';
+      document.getElementById('sub-text').textContent = 'Proteção desativada.';
+    } else {
+      alert(data.error || 'Erro ao desativar');
+    }
+  } catch(e) {
+    alert('Erro de conexão. Tente novamente.');
+  }
+}
+
+function showError() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+  document.getElementById('sub-text').textContent = 'Link inválido.';
+}
+
+init();
+</script>
+</body>
+</html>
