@@ -17,26 +17,26 @@
     .status{text-align:center;padding:20px;margin-bottom:20px}
     .spinner{width:32px;height:32px;border:3px solid rgba(16,185,129,0.2);border-top:3px solid #10b981;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
     @keyframes spin{to{transform:rotate(360deg)}}
-
     .tabs{display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px}
     .tab{flex:1;min-width:70px;padding:10px 6px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:11px;font-weight:500;cursor:pointer;text-align:center;font-family:'Outfit',sans-serif;transition:all 0.2s;white-space:nowrap}
     .tab.on{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08);color:#34d399}
     .tab svg{display:block;margin:0 auto 4px}
-
     .steps{display:none}.steps.on{display:block}
     .step{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;animation:fadeIn 0.4s ease backwards}
-    .step:nth-child(1){animation-delay:0.05s}.step:nth-child(2){animation-delay:0.1s}.step:nth-child(3){animation-delay:0.15s}.step:nth-child(4){animation-delay:0.2s}.step:nth-child(5){animation-delay:0.25s}
+    .step:nth-child(1){animation-delay:0.05s}.step:nth-child(2){animation-delay:0.1s}.step:nth-child(3){animation-delay:0.15s}.step:nth-child(4){animation-delay:0.2s}.step:nth-child(5){animation-delay:0.25s}.step:nth-child(6){animation-delay:0.3s}
     .sn{width:24px;height:24px;min-width:24px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
     .sc h3{font-size:13px;font-weight:600;margin-bottom:3px;color:#e4e4e7}
     .sc p{font-size:12px;color:#a1a1aa;line-height:1.4}
     .sc code{display:inline-block;margin-top:4px;padding:4px 10px;border-radius:5px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);color:#34d399;font-family:monospace;font-size:11px;word-break:break-all}
     .sc .hl{color:#10b981;font-weight:600}
+    .btn-download{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 16px;border-radius:8px;background:linear-gradient(135deg,#10b981,#059669);color:white;text-decoration:none;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;border:none;cursor:pointer}
+    .btn-download:hover{opacity:0.9}
     .note{margin-top:16px;padding:12px 14px;border-radius:8px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.12);border-left:3px solid #3b82f6}
     .note p{font-size:11px;color:#93c5fd;line-height:1.4}
     .note strong{color:#60a5fa}
     .warn{margin-top:10px;padding:12px 14px;border-radius:8px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.12);border-left:3px solid #f59e0b}
     .warn p{font-size:11px;color:#fcd34d;line-height:1.4}
-
+    .section-title{font-size:12px;font-weight:700;color:#10b981;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em}
     .verse{margin-top:24px;text-align:center;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}
     .verse p{font-size:13px;color:#a1a1aa;font-style:italic;line-height:1.5}
     .verse span{font-size:10px;color:#10b981;font-weight:600;margin-top:4px;display:block}
@@ -89,7 +89,7 @@
     <!-- ANDROID -->
     <div class="steps" id="s-android">
       <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra as Configurações</h3><p>Abra <span class="hl">Configurações</span> do celular.</p></div></div>
-      <div class="step"><div class="sn">2</div><div class="sc"><h3>Encontre o DNS Privado</h3><p>Vá em <span class="hl">Rede e Internet → DNS Privado</span>.<br><span style="font-size:10px;color:#71717a">Em alguns celulares: Conexões → Mais configurações de conexão → DNS Privado</span></p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Encontre o DNS Privado</h3><p>Vá em <span class="hl">Rede e Internet → DNS Privado</span>.<br><span style="font-size:10px;color:#71717a">Em alguns celulares: Conexões → Mais configurações → DNS Privado</span></p></div></div>
       <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite o endereço</h3><p>Selecione <span class="hl">"Nome do host do provedor de DNS privado"</span> e digite:</p><code>884789.dns.nextdns.io</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
       <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Proteção ativa em <span class="hl">todos os navegadores e apps</span>.</p></div></div>
       <div class="note"><p><strong>Seguro:</strong> Apenas muda o DNS. Não instala nada no celular.</p></div>
@@ -97,26 +97,29 @@
 
     <!-- PC -->
     <div class="steps" id="s-pc">
-      <div class="warn"><p>⚠️ <strong>Importante:</strong> Para proteção completa no PC, faça os DOIS passos abaixo. O Passo A protege o Chrome. O Passo B protege TODOS os navegadores.</p></div>
+      <div class="warn"><p>⚠️ <strong>Faça os dois passos abaixo</strong> para proteção completa no PC.</p></div>
 
-      <p style="font-size:12px;font-weight:600;color:#10b981;margin:14px 0 8px">— PASSO A: Extensão no Chrome —</p>
-      <div class="step"><div class="sn">1</div><div class="sc"><h3>Receba o arquivo</h3><p>Seu guardião vai te enviar a pasta da extensão Focus Shield.</p></div></div>
+      <p class="section-title">— Passo A: Extensão no Chrome —</p>
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Baixe a extensão</h3><p>Clique no botão abaixo para baixar a pasta da extensão Focus Shield:</p>
+        <a class="btn-download" href="https://drive.google.com/drive/folders/1Mc1o4whTmEWiH9F6YwJLB5q7gUDOmH0j" target="_blank">⬇️ Baixar Extensão</a>
+        <p style="margin-top:8px;font-size:10px;color:#52525b">Clique em "Baixar tudo" no Google Drive para salvar a pasta no seu PC.</p>
+      </div></div>
       <div class="step"><div class="sn">2</div><div class="sc"><h3>Abra o Chrome</h3><p>Na barra de endereço do Chrome, digite:</p><code>chrome://extensions</code><p style="margin-top:4px">Ative o <span class="hl">Modo do desenvolvedor</span> (canto superior direito).</p></div></div>
-      <div class="step"><div class="sn">3</div><div class="sc"><h3>Carregue a extensão</h3><p>Clique em <span class="hl">Carregar sem compactação</span> e selecione a pasta da extensão.</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Carregue a extensão</h3><p>Clique em <span class="hl">Carregar sem compactação</span> e selecione a pasta da extensão que você baixou.<br><span style="font-size:10px;color:#71717a">Se baixou como .zip, extraia a pasta primeiro.</span></p></div></div>
 
-      <p style="font-size:12px;font-weight:600;color:#10b981;margin:14px 0 8px">— PASSO B: NextDNS no Windows (todos os navegadores) —</p>
+      <p class="section-title">— Passo B: NextDNS no Windows —</p>
       <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra as Configurações</h3><p>Clique no menu <span class="hl">Iniciar → Configurações → Rede e Internet → Wi-Fi</span>.<br>Clique na sua rede Wi-Fi → <span class="hl">Propriedades</span>.</p></div></div>
       <div class="step"><div class="sn">2</div><div class="sc"><h3>Edite o DNS</h3><p>Role até <span class="hl">Atribuição do servidor DNS</span> → clique em <span class="hl">Editar</span>.<br>Mude para <span class="hl">Manual</span> e ative o IPv4.</p></div></div>
       <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite os endereços</h3><p>DNS preferencial:</p><code>45.90.28.215</code><p style="margin-top:4px">DNS alternativo:</p><code>45.90.30.215</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
-      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Agora <span class="hl">todos os navegadores</span> (Chrome, Edge, Firefox) estão protegidos.</p></div></div>
+      <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p><span class="hl">Todos os navegadores</span> (Chrome, Edge, Firefox) estão protegidos.</p></div></div>
       <div class="note"><p><strong>Seguro:</strong> Apenas muda o servidor DNS. Não instala nada no PC.</p></div>
     </div>
 
     <!-- TABLET -->
     <div class="steps" id="s-tablet">
-      <div class="step"><div class="sn">1</div><div class="sc"><h3>Identifique seu tablet</h3><p>É um <span class="hl">iPad</span> (Apple) ou <span class="hl">Android</span>?<br>iPad: siga as instruções da aba <span class="hl">iPhone</span>.<br>Android: siga as instruções da aba <span class="hl">Android</span>.</p></div></div>
+      <div class="step"><div class="sn">1</div><div class="sc"><h3>Identifique seu tablet</h3><p>É um <span class="hl">iPad</span> (Apple) → siga a aba <span class="hl">iPhone</span>.<br>É <span class="hl">Android</span> → siga a aba <span class="hl">Android</span>.</p></div></div>
       <div class="step"><div class="sn">2</div><div class="sc"><h3>iPad — Perfil NextDNS</h3><p>No Safari acesse:</p><code>https://apple.nextdns.io</code><p style="margin-top:4px">ID: <code>884789</code> → Download → Instale o perfil em Ajustes.</p></div></div>
-      <div class="step"><div class="sn">3</div><div class="sc"><h3>Android — DNS Privado</h3><p>Configurações → Rede → DNS Privado:<br></p><code>884789.dns.nextdns.io</code></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>Android — DNS Privado</h3><p>Configurações → Rede → DNS Privado:</p><code>884789.dns.nextdns.io</code></div></div>
       <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Proteção ativa em todos os apps e navegadores.</p></div></div>
     </div>
   </div>
@@ -134,7 +137,7 @@
     {t:"Não temas, porque eu sou contigo; eu te fortaleço e te ajudo.",r:"Isaías 41:10"},
     {t:"Se o Filho os libertar, vocês de fato serão livres.",r:"João 8:36"},
     {t:"Venham a mim, todos os que estão cansados, e eu darei descanso.",r:"Mateus 11:28"},
-    {t:"Deus é fiel e não permitirá que vocês sejam tentados além do que podem suportar.",r:"1 Coríntios 10:13"}
+    {t:"Deus é fiel e não permitirá que sejam tentados além do que podem suportar.",r:"1 Coríntios 10:13"}
   ];
   const v = verses[Math.floor(Math.random() * verses.length)];
   document.getElementById('v-text').textContent = '"' + v.t + '"';
@@ -153,18 +156,14 @@
     try {
       const r = await fetch('/api/validate-setup/' + token);
       if (r.ok) {
-        const data = await r.json();
-        // Salva que o setup foi acessado
         await fetch('/api/setup-complete', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, nextdnsId: '884789' })
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({token, nextdnsId: '884789'})
         });
       }
       showContent();
-    } catch(e) {
-      showContent();
-    }
+    } catch(e) { showContent(); }
   }
 
   function showContent() {
