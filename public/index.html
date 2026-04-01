@@ -343,11 +343,27 @@ async function loadGuardians() {
         const t = g.paid ? '✅ Ativo' : '⏳ Pendente';
         h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div>
-          <span style="font-size:9px;font-weight:600;color:${c}">${t}</span></div>`;
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:9px;font-weight:600;color:${c}">${t}</span>
+            <button onclick="deleteGuardian(${g.id},'${g.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button>
+          </div></div>`;
       });
     }
     document.getElementById('guardians-list').innerHTML = h;
   } catch(e) {}
+}
+
+async function deleteGuardian(id, name) {
+  if (!confirm('Deletar guardião ' + name + '?')) return;
+  try {
+    const r = await fetch('/api/admin/guardian/' + id, {
+      method: 'DELETE',
+      headers: {'x-admin-key': adminKey}
+    });
+    const data = await r.json();
+    if (r.ok) { notify('Guardião deletado!'); loadGuardians(); loadDashboard(); }
+    else notify(data.error || 'Erro ao deletar', true);
+  } catch(e) { notify('Erro ao deletar', true); }
 }
 
 async function addGuardian() {
