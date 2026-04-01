@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Focus Shield — Painel do Guardião</title>
+  <title>Focus Shield — Painel Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -45,13 +45,14 @@
     label{font-size:10px;color:#52525b;display:block;margin-bottom:4px;margin-top:12px}
     label:first-child{margin-top:0}
     .link-box{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:7px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);font-family:monospace;font-size:10px;color:#34d399;word-break:break-all}
-    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
-    .modal.show{display:flex}
-    .modal-c{background:#18181b;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;max-width:400px;width:92%;animation:fadeIn 0.2s ease}
     .notif{display:none;position:fixed;top:12px;right:12px;padding:10px 16px;border-radius:7px;font-size:11px;font-weight:500;z-index:1100;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;animation:fadeIn 0.3s}
     .notif.err{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#ef4444}
     .notif.show{display:block}
     .logout-btn{padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#52525b;font-size:10px;margin-top:8px;width:100%}
+    .tabs-row{display:flex;gap:8px;margin-bottom:16px}
+    .tab-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:11px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+    .tab-btn.on{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08);color:#34d399}
+    .tab-content{display:none}.tab-content.on{display:block}
     @media(max-width:768px){
       .app{flex-direction:column}
       .sidebar{width:100%;flex-direction:row;overflow-x:auto;padding:8px;border-right:none;border-bottom:1px solid rgba(255,255,255,0.05)}
@@ -122,23 +123,60 @@
 
     <!-- GERAR LINK -->
     <div class="page fade" id="pg-generate" style="display:none">
-      <h1>Gerar Link</h1><p class="psub">Crie um link de acesso para o guardião</p>
-      <div class="card" style="max-width:480px">
-        <div id="gen-form">
-          <label>Nome do Guardião</label>
-          <input class="inp" id="gen-name" placeholder="Ex: João Silva">
-          <label>Email do Guardião</label>
-          <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
-          <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link do Guardião</button>
-        </div>
-        <div id="gen-result" style="display:none">
-          <p style="font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px" id="gen-label"></p>
-          <label>Link do Painel do Guardião</label>
-          <div class="link-box" style="margin-top:6px">
-            <span style="flex:1" id="gen-url"></span>
-            <button onclick="copyL()" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button>
+      <h1>Gerar Link</h1><p class="psub">Escolha o tipo de link que deseja gerar</p>
+
+      <div class="tabs-row">
+        <button class="tab-btn on" onclick="switchGenTab('guardiao',this)">🛡️ Link do Guardião</button>
+        <button class="tab-btn" onclick="switchGenTab('protegido',this)">👤 Link do Protegido (R$29,90)</button>
+      </div>
+
+      <!-- Tab Guardião -->
+      <div class="tab-content on" id="gen-tab-guardiao">
+        <div class="card" style="max-width:480px">
+          <div id="gen-form">
+            <label>Nome do Guardião</label>
+            <input class="inp" id="gen-name" placeholder="Ex: João Silva">
+            <label>Email do Guardião</label>
+            <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
+            <p style="font-size:10px;color:#3f3f46;margin-top:10px">O guardião acessa o painel pelo link, sem precisar de senha.</p>
+            <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link do Guardião</button>
           </div>
-          <button class="btn btn-s" style="margin-top:12px" onclick="clearGen()">Gerar Novo</button>
+          <div id="gen-result" style="display:none">
+            <p style="font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px" id="gen-label"></p>
+            <label>Link do Painel do Guardião</label>
+            <div class="link-box" style="margin-top:6px">
+              <span style="flex:1" id="gen-url"></span>
+              <button onclick="copyL('gen-url','copy-b')" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b">📋</button>
+            </div>
+            <button class="btn btn-s" style="margin-top:12px" onclick="clearGen()">Gerar Novo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Protegido -->
+      <div class="tab-content" id="gen-tab-protegido">
+        <div class="card" style="max-width:480px">
+          <div id="child-form">
+            <div style="padding:10px 12px;border-radius:8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;color:#10b981">💳 R$ 29,90 via PIX</div>
+              <div style="font-size:10px;color:#52525b;margin-top:2px">O protegido recebe o link, paga e ativa a proteção.</div>
+            </div>
+            <label>Nome do Protegido</label>
+            <input class="inp" id="child-name" placeholder="Ex: Maria Silva">
+            <label>Email do Protegido</label>
+            <input class="inp" id="child-email" placeholder="maria@email.com" style="margin-top:6px">
+            <button class="btn btn-p" style="margin-top:12px" onclick="genChildLink()">🔗 Gerar Link de Pagamento</button>
+          </div>
+          <div id="child-result" style="display:none">
+            <p style="font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px" id="child-label"></p>
+            <label>Link de Pagamento do Protegido</label>
+            <div class="link-box" style="margin-top:6px">
+              <span style="flex:1" id="child-url"></span>
+              <button onclick="copyL('child-url','copy-b2')" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b2">📋</button>
+            </div>
+            <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o protegido. Ele paga R$29,90 e ativa a proteção.</p>
+            <button class="btn btn-s" style="margin-top:12px" onclick="clearChildGen()">Gerar Novo</button>
+          </div>
         </div>
       </div>
     </div>
@@ -209,7 +247,6 @@
             <span style="flex:1" id="org-link"></span>
             <button onclick="copyOrgLink()" style="background:none;border:none;color:#34d399;font-size:14px">📋</button>
           </div>
-          <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para a igreja. Ela acessa o painel sem senha.</p>
         </div>
       </div>
       <div class="card" style="max-width:560px">
@@ -244,14 +281,12 @@
 </div>
 
 <div class="notif" id="notif"></div>
-<div class="modal" id="q-modal"><div class="modal-c" id="q-content"></div></div>
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)" id="q-modal" class="modal">
+  <div style="background:#18181b;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;max-width:400px;width:92%" id="q-content"></div>
+</div>
 
 <script>
-let user = null;
-let adminKey = null;
-let genUrl = '';
-let lastGuardianLink = '';
-let lastOrgLink = '';
+let user = null, adminKey = null, genUrl = '', lastGuardianLink = '', lastOrgLink = '', lastChildUrl = '';
 
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -259,55 +294,58 @@ async function doLogin() {
   const errEl = document.getElementById('login-err');
   errEl.style.display = 'none';
   try {
-    const r = await fetch('/api/login', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email, password: pass})
-    });
-    if (!r.ok) { errEl.style.display = 'block'; return; }
+    const r = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    if (!r.ok) { errEl.style.display='block'; return; }
     user = await r.json();
     adminKey = user.adminKey || pass;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'flex';
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-screen').style.display='flex';
     setupUI(); loadDashboard();
-  } catch(e) { errEl.style.display = 'block'; }
+  } catch(e) { errEl.style.display='block'; }
 }
 
 function doLogout() {
-  user = null; adminKey = null;
-  document.getElementById('app-screen').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
+  user=null; adminKey=null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
 }
 
 function setupUI() {
   document.getElementById('user-name').textContent = user.email;
-  document.getElementById('role-badge').textContent = user.role === 'admin' ? '👑 Admin' : '🛡️ Guardião';
-  if (user.role === 'admin') {
-    document.getElementById('admin-label').style.display = '';
-    document.getElementById('nav-guardians').style.display = '';
-    document.getElementById('nav-orgs').style.display = '';
-    document.getElementById('nav-payments').style.display = '';
-    document.getElementById('nav-filters').style.display = '';
+  document.getElementById('role-badge').textContent = user.role==='admin' ? '👑 Admin' : '🛡️ Guardião';
+  if (user.role==='admin') {
+    document.getElementById('admin-label').style.display='';
+    document.getElementById('nav-guardians').style.display='';
+    document.getElementById('nav-orgs').style.display='';
+    document.getElementById('nav-payments').style.display='';
+    document.getElementById('nav-filters').style.display='';
   }
 }
 
 function goPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-  document.querySelectorAll('.nav').forEach(n => n.classList.remove('active'));
-  document.getElementById('pg-' + id).style.display = 'block';
-  if (el) el.classList.add('active');
-  if (id === 'dashboard') loadDashboard();
-  if (id === 'guardians') loadGuardians();
-  if (id === 'payments') loadPayments();
-  if (id === 'orgs') loadOrgs();
-  if (id === 'generate') clearGen();
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+id).style.display='block';
+  if(el) el.classList.add('active');
+  if(id==='dashboard') loadDashboard();
+  if(id==='guardians') loadGuardians();
+  if(id==='payments') loadPayments();
+  if(id==='orgs') loadOrgs();
+}
+
+function switchGenTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('gen-tab-'+tab).classList.add('on');
+  btn.classList.add('on');
 }
 
 async function loadDashboard() {
   try {
     const [guardians, payments, orgs] = await Promise.all([
-      fetch('/api/admin/guardians', {headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
-      fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
-      fetch('/api/admin/orgs', {headers:{'x-admin-key':adminKey}}).then(r=>r.json())
+      fetch('/api/admin/guardians',{headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
+      fetch('/api/admin/payments',{headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
+      fetch('/api/admin/orgs',{headers:{'x-admin-key':adminKey}}).then(r=>r.json())
     ]);
     document.getElementById('s-guardians').textContent = guardians.length;
     document.getElementById('s-pagos').textContent = guardians.filter(g=>g.paid==1).length;
@@ -315,65 +353,88 @@ async function loadDashboard() {
     document.getElementById('s-pagamentos').textContent = payments.length;
     let h = '';
     if (!guardians.length) {
-      h = '<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';
+      h='<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';
     } else {
-      guardians.slice(0,8).forEach(g => {
-        const c = g.paid ? '#10b981' : '#f59e0b';
-        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+      guardians.slice(0,8).forEach(g=>{
+        const c=g.paid?'#10b981':'#f59e0b';
+        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:12px">${g.name}</div><div style="font-size:10px;color:#52525b">${g.email}</div></div>
           <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'Ativo':'Pendente'}</span></div>`;
       });
     }
     document.getElementById('dashboard-list').innerHTML = h;
-  } catch(e) {}
+  } catch(e){}
 }
 
 async function genLink() {
-  const name = document.getElementById('gen-name').value.trim();
-  const email = document.getElementById('gen-email').value.trim();
-  if (!name || !email) { notify('Preencha nome e email', true); return; }
+  const name=document.getElementById('gen-name').value.trim();
+  const email=document.getElementById('gen-email').value.trim();
+  if(!name||!email){notify('Preencha nome e email',true);return;}
   try {
-    const r = await fetch('/api/admin/create-guardian', {
-      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
-      body: JSON.stringify({name, email})
-    });
-    const data = await r.json();
-    if (!r.ok) { notify(data.error || 'Erro', true); return; }
-    genUrl = data.guardianLink;
-    document.getElementById('gen-label').textContent = '✅ Link gerado para ' + name;
-    document.getElementById('gen-url').textContent = genUrl;
-    document.getElementById('gen-form').style.display = 'none';
-    document.getElementById('gen-result').style.display = 'block';
+    const r=await fetch('/api/admin/create-guardian',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,email})});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    genUrl=data.guardianLink;
+    document.getElementById('gen-label').textContent='✅ Link gerado para '+name;
+    document.getElementById('gen-url').textContent=genUrl;
+    document.getElementById('gen-form').style.display='none';
+    document.getElementById('gen-result').style.display='block';
     notify('Link gerado!');
-  } catch(e) { notify('Erro ao gerar link', true); }
+  } catch(e){notify('Erro ao gerar link',true);}
 }
 
 function clearGen() {
-  document.getElementById('gen-form').style.display = 'block';
-  document.getElementById('gen-result').style.display = 'none';
-  document.getElementById('gen-name').value = '';
-  document.getElementById('gen-email').value = '';
-  genUrl = '';
+  document.getElementById('gen-form').style.display='block';
+  document.getElementById('gen-result').style.display='none';
+  document.getElementById('gen-name').value='';
+  document.getElementById('gen-email').value='';
+  genUrl='';
 }
 
-function copyL() {
-  navigator.clipboard.writeText(genUrl).then(() => {
-    document.getElementById('copy-b').textContent = '✅';
-    setTimeout(() => document.getElementById('copy-b').textContent = '📋', 2000);
+async function genChildLink() {
+  const name=document.getElementById('child-name').value.trim();
+  const email=document.getElementById('child-email').value.trim();
+  if(!name||!email){notify('Preencha nome e email',true);return;}
+  try {
+    const r=await fetch('/api/admin/create-child',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,email})});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    lastChildUrl=data.paymentLink;
+    document.getElementById('child-label').textContent='✅ Link gerado para '+name;
+    document.getElementById('child-url').textContent=lastChildUrl;
+    document.getElementById('child-form').style.display='none';
+    document.getElementById('child-result').style.display='block';
+    notify('Link gerado!');
+  } catch(e){notify('Erro ao gerar link',true);}
+}
+
+function clearChildGen() {
+  document.getElementById('child-form').style.display='block';
+  document.getElementById('child-result').style.display='none';
+  document.getElementById('child-name').value='';
+  document.getElementById('child-email').value='';
+  lastChildUrl='';
+}
+
+function copyL(spanId, btnId) {
+  const text=document.getElementById(spanId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById(btnId);
+    btn.textContent='✅';
+    setTimeout(()=>btn.textContent='📋',2000);
   });
 }
 
 async function loadGuardians() {
   try {
-    const r = await fetch('/api/admin/guardians', {headers:{'x-admin-key':adminKey}});
-    const gs = await r.json();
-    let h = '';
-    if (!gs.length) {
-      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum guardião cadastrado</p>';
-    } else {
-      gs.forEach(g => {
-        const c = g.paid ? '#10b981' : '#f59e0b';
-        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+    const r=await fetch('/api/admin/guardians',{headers:{'x-admin-key':adminKey}});
+    const gs=await r.json();
+    let h='';
+    if(!gs.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum guardião cadastrado</p>';}
+    else {
+      gs.forEach(g=>{
+        const c=g.paid?'#10b981':'#f59e0b';
+        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'✅ Ativo':'⏳ Pendente'}</span>
@@ -381,56 +442,49 @@ async function loadGuardians() {
           </div></div>`;
       });
     }
-    document.getElementById('guardians-list').innerHTML = h;
-  } catch(e) {}
+    document.getElementById('guardians-list').innerHTML=h;
+  } catch(e){}
 }
 
-async function deleteGuardian(id, name) {
-  if (!confirm('Deletar guardião ' + name + '?')) return;
+async function deleteGuardian(id,name) {
+  if(!confirm('Deletar guardião '+name+'?')) return;
   try {
-    const r = await fetch('/api/admin/guardian/' + id, {method:'DELETE', headers:{'x-admin-key':adminKey}});
-    const data = await r.json();
-    if (r.ok) { notify('Guardião deletado!'); loadGuardians(); loadDashboard(); }
-    else notify(data.error || 'Erro ao deletar', true);
-  } catch(e) { notify('Erro ao deletar', true); }
+    const r=await fetch('/api/admin/guardian/'+id,{method:'DELETE',headers:{'x-admin-key':adminKey}});
+    const data=await r.json();
+    if(r.ok){notify('Guardião deletado!');loadGuardians();loadDashboard();}
+    else notify(data.error||'Erro ao deletar',true);
+  } catch(e){notify('Erro ao deletar',true);}
 }
 
 async function addGuardian() {
-  const n = document.getElementById('g-name').value.trim();
-  const e = document.getElementById('g-email').value.trim();
-  if (!n || !e) { notify('Preencha nome e email', true); return; }
+  const n=document.getElementById('g-name').value.trim();
+  const e=document.getElementById('g-email').value.trim();
+  if(!n||!e){notify('Preencha nome e email',true);return;}
   try {
-    const r = await fetch('/api/admin/create-guardian', {
-      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
-      body: JSON.stringify({name:n, email:e})
-    });
-    const data = await r.json();
-    if (!r.ok) { notify(data.error || 'Erro', true); return; }
-    lastGuardianLink = data.guardianLink;
-    document.getElementById('g-setup-link').textContent = lastGuardianLink;
-    document.getElementById('guardian-link-result').style.display = 'block';
-    document.getElementById('g-name').value = '';
-    document.getElementById('g-email').value = '';
+    const r=await fetch('/api/admin/create-guardian',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name:n,email:e})});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    lastGuardianLink=data.guardianLink;
+    document.getElementById('g-setup-link').textContent=lastGuardianLink;
+    document.getElementById('guardian-link-result').style.display='block';
+    document.getElementById('g-name').value='';
+    document.getElementById('g-email').value='';
     notify('Guardião criado!');
     loadGuardians();
-  } catch(e) { notify('Erro ao criar guardião', true); }
+  } catch(e){notify('Erro ao criar guardião',true);}
 }
 
-function copyGLink() {
-  navigator.clipboard.writeText(lastGuardianLink).then(() => notify('Link copiado!'));
-}
+function copyGLink(){navigator.clipboard.writeText(lastGuardianLink).then(()=>notify('Link copiado!'));}
 
-// ── IGREJAS ────────────────────────────────────────────────────────────────────
 async function loadOrgs() {
   try {
-    const r = await fetch('/api/admin/orgs', {headers:{'x-admin-key':adminKey}});
-    const orgs = await r.json();
-    let h = '';
-    if (!orgs.length) {
-      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhuma igreja cadastrada</p>';
-    } else {
-      orgs.forEach(o => {
-        h += `<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px;margin-bottom:10px">
+    const r=await fetch('/api/admin/orgs',{headers:{'x-admin-key':adminKey}});
+    const orgs=await r.json();
+    let h='';
+    if(!orgs.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhuma igreja cadastrada</p>';}
+    else {
+      orgs.forEach(o=>{
+        h+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div>
               <div style="font-weight:700;font-size:13px;color:#fafafa">⛪ ${o.name}</div>
@@ -447,121 +501,109 @@ async function loadOrgs() {
         </div>`;
       });
     }
-    document.getElementById('orgs-list').innerHTML = h;
-  } catch(e) {}
+    document.getElementById('orgs-list').innerHTML=h;
+  } catch(e){}
 }
 
 async function addOrg() {
-  const name = document.getElementById('org-name').value.trim();
-  const pastor = document.getElementById('org-pastor').value.trim();
-  const email = document.getElementById('org-email').value.trim();
-  const phone = document.getElementById('org-phone').value.trim();
-  const address = document.getElementById('org-address').value.trim();
-  const document_ = document.getElementById('org-document').value.trim();
-  const mp_token = document.getElementById('org-mp').value.trim();
-  if (!name || !pastor || !email) { notify('Nome, pastor e email obrigatórios', true); return; }
+  const name=document.getElementById('org-name').value.trim();
+  const pastor=document.getElementById('org-pastor').value.trim();
+  const email=document.getElementById('org-email').value.trim();
+  const phone=document.getElementById('org-phone').value.trim();
+  const address=document.getElementById('org-address').value.trim();
+  const doc=document.getElementById('org-document').value.trim();
+  const mp=document.getElementById('org-mp').value.trim();
+  if(!name||!pastor||!email){notify('Nome, pastor e email obrigatórios',true);return;}
   try {
-    const r = await fetch('/api/admin/create-org', {
-      method: 'POST', headers: {'Content-Type':'application/json','x-admin-key':adminKey},
-      body: JSON.stringify({name, pastor, email, phone, address, document: document_, mp_token})
-    });
-    const data = await r.json();
-    if (!r.ok) { notify(data.error || 'Erro', true); return; }
-    lastOrgLink = data.orgLink;
-    document.getElementById('org-link').textContent = lastOrgLink;
-    document.getElementById('org-link-result').style.display = 'block';
-    document.getElementById('org-name').value = '';
-    document.getElementById('org-pastor').value = '';
-    document.getElementById('org-email').value = '';
-    document.getElementById('org-phone').value = '';
-    document.getElementById('org-address').value = '';
-    document.getElementById('org-document').value = '';
-    document.getElementById('org-mp').value = '';
+    const r=await fetch('/api/admin/create-org',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,pastor,email,phone,address,document:doc,mp_token:mp})});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    lastOrgLink=data.orgLink;
+    document.getElementById('org-link').textContent=lastOrgLink;
+    document.getElementById('org-link-result').style.display='block';
+    ['org-name','org-pastor','org-email','org-phone','org-address','org-document','org-mp'].forEach(id=>document.getElementById(id).value='');
     notify('Igreja cadastrada!');
     loadOrgs();
-  } catch(e) { notify('Erro ao cadastrar igreja', true); }
+  } catch(e){notify('Erro ao cadastrar igreja',true);}
 }
 
-function copyOrgLink() {
-  navigator.clipboard.writeText(lastOrgLink).then(() => notify('Link copiado!'));
-}
+function copyOrgLink(){navigator.clipboard.writeText(lastOrgLink).then(()=>notify('Link copiado!'));}
 
-async function deleteOrg(id, name) {
-  if (!confirm('Deletar igreja ' + name + '? Isso remove todos os guardiões e protegidos dela.')) return;
+async function deleteOrg(id,name) {
+  if(!confirm('Deletar igreja '+name+'? Isso remove todos os guardiões e protegidos dela.')) return;
   try {
-    const r = await fetch('/api/admin/org/' + id, {method:'DELETE', headers:{'x-admin-key':adminKey}});
-    const data = await r.json();
-    if (r.ok) { notify('Igreja deletada!'); loadOrgs(); loadDashboard(); }
-    else notify(data.error || 'Erro', true);
-  } catch(e) { notify('Erro ao deletar', true); }
+    const r=await fetch('/api/admin/org/'+id,{method:'DELETE',headers:{'x-admin-key':adminKey}});
+    const data=await r.json();
+    if(r.ok){notify('Igreja deletada!');loadOrgs();loadDashboard();}
+    else notify(data.error||'Erro',true);
+  } catch(e){notify('Erro ao deletar',true);}
 }
 
 async function loadPayments() {
   try {
-    const r = await fetch('/api/admin/payments', {headers:{'x-admin-key':adminKey}});
-    const ps = await r.json();
-    let h = '';
-    if (!ps.length) {
-      h = '<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum pagamento ainda</p>';
-    } else {
-      ps.forEach(p => {
-        const c = p.status === 'approved' ? '#10b981' : '#f59e0b';
-        h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+    const r=await fetch('/api/admin/payments',{headers:{'x-admin-key':adminKey}});
+    const ps=await r.json();
+    let h='';
+    if(!ps.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum pagamento ainda</p>';}
+    else {
+      ps.forEach(p=>{
+        const c=p.status==='approved'?'#10b981':'#f59e0b';
+        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
           <div><div style="font-weight:600;font-size:11px">${p.guardian_name}</div><div style="font-size:9px;color:#52525b">${p.email}</div></div>
           <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div>
           <div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅':'⏳'}</div></div></div>`;
       });
     }
-    document.getElementById('payments-list').innerHTML = h;
-  } catch(e) {}
+    document.getElementById('payments-list').innerHTML=h;
+  } catch(e){}
 }
 
 function showQ(gender) {
-  const male = [
+  const male=[
     {q:"Você já conversou com alguém de confiança?",v:null},
     {q:"Pense nas pessoas que te amam.",v:{t:"Não temas, porque eu sou contigo.",r:"Isaías 41:10"}},
     {q:"Deus te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},
     {q:"Tem certeza que deseja desativar?",v:null,final:true}
   ];
-  const female = [
+  const female=[
     {q:"Você já conversou com alguém de confiança?",v:null},
     {q:"Você é amada, filha de Deus.",v:{t:"Venham a mim todos os que estão cansados.",r:"Mateus 11:28"}},
     {q:"Jesus te ama como você é.",v:{t:"Se o Filho os libertar, serão livres.",r:"João 8:36"}},
     {q:"Tem certeza que deseja desativar?",v:null,final:true}
   ];
-  const steps = gender === 'male' ? male : female;
-  let step = 0;
-  function render() {
-    const s = steps[step];
-    let h = `<div style="display:flex;justify-content:space-between;margin-bottom:16px">
+  const steps=gender==='male'?male:female;
+  let step=0;
+  function render(){
+    const s=steps[step];
+    let h=`<div style="display:flex;justify-content:space-between;margin-bottom:16px">
       <span style="font-size:9px;color:#52525b">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span>
-      <span style="cursor:pointer;color:#52525b" onclick="document.getElementById('q-modal').classList.remove('show')">&times;</span></div>`;
-    if (s.v) h += `<div style="padding:10px;background:rgba(16,185,129,0.06);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
+      <span style="cursor:pointer;color:#52525b;font-size:18px" onclick="document.getElementById('q-modal').style.display='none'">&times;</span></div>`;
+    if(s.v) h+=`<div style="padding:10px;background:rgba(16,185,129,0.06);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
       <p style="font-size:12px;color:#a1a1aa;font-style:italic">"${s.v.t}"</p><span style="font-size:9px;color:#10b981">${s.v.r}</span></div>`;
-    h += `<h3 style="font-size:14px;font-weight:600;color:#fafafa;margin-bottom:14px">${s.q}</h3>`;
-    if (s.final) {
-      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').classList.remove('show')">Não, continuar protegido!</button>`;
-      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').classList.remove('show')">Sim, desativar</button>`;
+    h+=`<h3 style="font-size:14px;font-weight:600;color:#fafafa;margin-bottom:14px">${s.q}</h3>`;
+    if(s.final){
+      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').style.display='none'">Não, continuar protegido!</button>`;
+      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').style.display='none'">Sim, desativar</button>`;
     } else {
-      h += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Quero continuar</button>`;
-      h += `<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar</button>`;
+      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Quero continuar</button>`;
+      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar</button>`;
     }
-    document.getElementById('q-content').innerHTML = h;
+    document.getElementById('q-content').innerHTML=h;
   }
-  window.nextQ = () => { if(step < steps.length-1){step++;render();} };
+  window.nextQ=()=>{if(step<steps.length-1){step++;render();}};
   render();
-  document.getElementById('q-modal').classList.add('show');
+  document.getElementById('q-modal').style.display='flex';
 }
 
-function notify(msg, isErr=false) {
-  const n = document.getElementById('notif');
-  n.textContent = msg;
-  n.className = 'notif show' + (isErr ? ' err' : '');
-  setTimeout(() => n.classList.remove('show'), 3500);
+function notify(msg,isErr=false){
+  const n=document.getElementById('notif');
+  n.textContent=msg;
+  n.className='notif show'+(isErr?' err':'');
+  setTimeout(()=>n.classList.remove('show'),3500);
 }
 
-document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('login-email').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-pass').focus(); });
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
 </script>
 </body>
 </html>
