@@ -11,8 +11,8 @@
     ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:3px}
     button{cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
     button:hover{opacity:0.88;transform:translateY(-1px)}
-    input,textarea{font-family:'Outfit',sans-serif;outline:none}
-    input:focus,textarea:focus{border-color:rgba(16,185,129,0.3)!important}
+    input{font-family:'Outfit',sans-serif;outline:none}
+    input:focus{border-color:rgba(16,185,129,0.3)!important}
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     .fade{animation:fadeIn 0.3s ease}
     .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -49,8 +49,8 @@
     .notif.err{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#ef4444}
     .notif.show{display:block}
     .logout-btn{padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#52525b;font-size:10px;margin-top:8px;width:100%}
-    .tabs-row{display:flex;gap:8px;margin-bottom:16px}
-    .tab-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:11px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+    .tabs-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+    .tab-btn{padding:7px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#71717a;font-size:11px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
     .tab-btn.on{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.08);color:#34d399}
     .tab-content{display:none}.tab-content.on{display:block}
     @media(max-width:768px){
@@ -126,8 +126,9 @@
       <h1>Gerar Link</h1><p class="psub">Escolha o tipo de link que deseja gerar</p>
 
       <div class="tabs-row">
-        <button class="tab-btn on" onclick="switchGenTab('guardiao',this)">🛡️ Link do Guardião</button>
-        <button class="tab-btn" onclick="switchGenTab('protegido',this)">👤 Link do Protegido (R$29,90)</button>
+        <button class="tab-btn on" onclick="switchGenTab('guardiao',this)">🛡️ Guardião</button>
+        <button class="tab-btn" onclick="switchGenTab('protegido-pago',this)">💳 Protegido R$29,90</button>
+        <button class="tab-btn" onclick="switchGenTab('protegido-free',this)">🎁 Protegido Grátis</button>
       </div>
 
       <!-- Tab Guardião -->
@@ -153,8 +154,8 @@
         </div>
       </div>
 
-      <!-- Tab Protegido -->
-      <div class="tab-content" id="gen-tab-protegido">
+      <!-- Tab Protegido Pago -->
+      <div class="tab-content" id="gen-tab-protegido-pago">
         <div class="card" style="max-width:480px">
           <div id="child-form">
             <div style="padding:10px 12px;border-radius:8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);margin-bottom:14px">
@@ -169,13 +170,39 @@
           </div>
           <div id="child-result" style="display:none">
             <p style="font-size:12px;color:#34d399;font-weight:600;margin-bottom:10px" id="child-label"></p>
-            <label>Link de Pagamento do Protegido</label>
+            <label>Link de Pagamento</label>
             <div class="link-box" style="margin-top:6px">
               <span style="flex:1" id="child-url"></span>
               <button onclick="copyL('child-url','copy-b2')" style="background:none;border:none;color:#34d399;font-size:14px" id="copy-b2">📋</button>
             </div>
-            <p style="font-size:10px;color:#3f3f46;margin-top:6px">Envie este link para o protegido. Ele paga R$29,90 e ativa a proteção.</p>
             <button class="btn btn-s" style="margin-top:12px" onclick="clearChildGen()">Gerar Novo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Protegido Grátis -->
+      <div class="tab-content" id="gen-tab-protegido-free">
+        <div class="card" style="max-width:480px">
+          <div id="free-form">
+            <div style="padding:10px 12px;border-radius:8px;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;color:#a78bfa">🎁 Link Gratuito</div>
+              <div style="font-size:10px;color:#52525b;margin-top:2px">Somente você pode gerar este link. O protegido vai direto para o setup sem pagar.</div>
+            </div>
+            <label>Nome do Protegido</label>
+            <input class="inp" id="free-name" placeholder="Ex: Pedro Santos">
+            <label>Email do Protegido</label>
+            <input class="inp" id="free-email" placeholder="pedro@email.com" style="margin-top:6px">
+            <button class="btn" style="margin-top:12px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff" onclick="genFreeLink()">🎁 Gerar Link Gratuito</button>
+          </div>
+          <div id="free-result" style="display:none">
+            <p style="font-size:12px;color:#a78bfa;font-weight:600;margin-bottom:10px" id="free-label"></p>
+            <label>Link de Setup Gratuito</label>
+            <div class="link-box" style="margin-top:6px;background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.2)">
+              <span style="flex:1;color:#a78bfa" id="free-url"></span>
+              <button onclick="copyL('free-url','copy-b3')" style="background:none;border:none;color:#a78bfa;font-size:14px" id="copy-b3">📋</button>
+            </div>
+            <p style="font-size:10px;color:#3f3f46;margin-top:6px">O protegido acessa este link e instala a proteção diretamente, sem pagar.</p>
+            <button class="btn btn-s" style="margin-top:12px" onclick="clearFreeGen()">Gerar Novo</button>
           </div>
         </div>
       </div>
@@ -238,7 +265,7 @@
         <label>CNPJ ou CPF</label>
         <input class="inp" id="org-document" placeholder="00.000.000/0000-00">
         <label>Token Mercado Pago (opcional)</label>
-        <input class="inp" id="org-mp" placeholder="APP_USR-... (para split de pagamento)">
+        <input class="inp" id="org-mp" placeholder="APP_USR-...">
         <p style="font-size:10px;color:#3f3f46;margin-top:6px">Se não informado, o pagamento cai na sua conta e você repassa manualmente.</p>
         <button class="btn btn-p" style="margin-top:12px" onclick="addOrg()">⛪ Cadastrar Igreja</button>
         <div id="org-link-result" style="display:none;margin-top:12px">
@@ -281,39 +308,39 @@
 </div>
 
 <div class="notif" id="notif"></div>
-<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)" id="q-modal" class="modal">
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)" id="q-modal">
   <div style="background:#18181b;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;max-width:400px;width:92%" id="q-content"></div>
 </div>
 
 <script>
-let user = null, adminKey = null, genUrl = '', lastGuardianLink = '', lastOrgLink = '', lastChildUrl = '';
+let user=null,adminKey=null,genUrl='',lastGuardianLink='',lastOrgLink='';
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-pass').value.trim();
-  const errEl = document.getElementById('login-err');
-  errEl.style.display = 'none';
-  try {
-    const r = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
-    if (!r.ok) { errEl.style.display='block'; return; }
-    user = await r.json();
-    adminKey = user.adminKey || pass;
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value.trim();
+  const errEl=document.getElementById('login-err');
+  errEl.style.display='none';
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    if(!r.ok){errEl.style.display='block';return;}
+    user=await r.json();
+    adminKey=user.adminKey||pass;
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='flex';
-    setupUI(); loadDashboard();
-  } catch(e) { errEl.style.display='block'; }
+    setupUI();loadDashboard();
+  }catch(e){errEl.style.display='block';}
 }
 
-function doLogout() {
-  user=null; adminKey=null;
+function doLogout(){
+  user=null;adminKey=null;
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
 
-function setupUI() {
-  document.getElementById('user-name').textContent = user.email;
-  document.getElementById('role-badge').textContent = user.role==='admin' ? '👑 Admin' : '🛡️ Guardião';
-  if (user.role==='admin') {
+function setupUI(){
+  document.getElementById('user-name').textContent=user.email;
+  document.getElementById('role-badge').textContent=user.role==='admin'?'👑 Admin':'🛡️ Guardião';
+  if(user.role==='admin'){
     document.getElementById('admin-label').style.display='';
     document.getElementById('nav-guardians').style.display='';
     document.getElementById('nav-orgs').style.display='';
@@ -322,55 +349,47 @@ function setupUI() {
   }
 }
 
-function goPage(id, el) {
+function goPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.style.display='none');
   document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
   document.getElementById('pg-'+id).style.display='block';
-  if(el) el.classList.add('active');
-  if(id==='dashboard') loadDashboard();
-  if(id==='guardians') loadGuardians();
-  if(id==='payments') loadPayments();
-  if(id==='orgs') loadOrgs();
+  if(el)el.classList.add('active');
+  if(id==='dashboard')loadDashboard();
+  if(id==='guardians')loadGuardians();
+  if(id==='payments')loadPayments();
+  if(id==='orgs')loadOrgs();
 }
 
-function switchGenTab(tab, btn) {
+function switchGenTab(tab,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('gen-tab-'+tab).classList.add('on');
   btn.classList.add('on');
 }
 
-async function loadDashboard() {
-  try {
-    const [guardians, payments, orgs] = await Promise.all([
+async function loadDashboard(){
+  try{
+    const [guardians,payments,orgs]=await Promise.all([
       fetch('/api/admin/guardians',{headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
       fetch('/api/admin/payments',{headers:{'x-admin-key':adminKey}}).then(r=>r.json()),
       fetch('/api/admin/orgs',{headers:{'x-admin-key':adminKey}}).then(r=>r.json())
     ]);
-    document.getElementById('s-guardians').textContent = guardians.length;
-    document.getElementById('s-pagos').textContent = guardians.filter(g=>g.paid==1).length;
-    document.getElementById('s-orgs').textContent = orgs.length;
-    document.getElementById('s-pagamentos').textContent = payments.length;
-    let h = '';
-    if (!guardians.length) {
-      h='<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';
-    } else {
-      guardians.slice(0,8).forEach(g=>{
-        const c=g.paid?'#10b981':'#f59e0b';
-        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
-          <div><div style="font-weight:600;font-size:12px">${g.name}</div><div style="font-size:10px;color:#52525b">${g.email}</div></div>
-          <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'Ativo':'Pendente'}</span></div>`;
-      });
-    }
-    document.getElementById('dashboard-list').innerHTML = h;
-  } catch(e){}
+    document.getElementById('s-guardians').textContent=guardians.length;
+    document.getElementById('s-pagos').textContent=guardians.filter(g=>g.paid==1).length;
+    document.getElementById('s-orgs').textContent=orgs.length;
+    document.getElementById('s-pagamentos').textContent=payments.length;
+    let h='';
+    if(!guardians.length){h='<p style="font-size:12px;color:#3f3f46;text-align:center;padding:20px">Nenhum guardião ainda.</p>';}
+    else{guardians.slice(0,8).forEach(g=>{const c=g.paid?'#10b981':'#f59e0b';h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)"><div><div style="font-weight:600;font-size:12px">${g.name}</div><div style="font-size:10px;color:#52525b">${g.email}</div></div><span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'Ativo':'Pendente'}</span></div>`;});}
+    document.getElementById('dashboard-list').innerHTML=h;
+  }catch(e){}
 }
 
-async function genLink() {
+async function genLink(){
   const name=document.getElementById('gen-name').value.trim();
   const email=document.getElementById('gen-email').value.trim();
   if(!name||!email){notify('Preencha nome e email',true);return;}
-  try {
+  try{
     const r=await fetch('/api/admin/create-guardian',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,email})});
     const data=await r.json();
     if(!r.ok){notify(data.error||'Erro',true);return;}
@@ -380,10 +399,10 @@ async function genLink() {
     document.getElementById('gen-form').style.display='none';
     document.getElementById('gen-result').style.display='block';
     notify('Link gerado!');
-  } catch(e){notify('Erro ao gerar link',true);}
+  }catch(e){notify('Erro ao gerar link',true);}
 }
 
-function clearGen() {
+function clearGen(){
   document.getElementById('gen-form').style.display='block';
   document.getElementById('gen-result').style.display='none';
   document.getElementById('gen-name').value='';
@@ -391,32 +410,53 @@ function clearGen() {
   genUrl='';
 }
 
-async function genChildLink() {
+async function genChildLink(){
   const name=document.getElementById('child-name').value.trim();
   const email=document.getElementById('child-email').value.trim();
   if(!name||!email){notify('Preencha nome e email',true);return;}
-  try {
+  try{
     const r=await fetch('/api/admin/create-child',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,email})});
     const data=await r.json();
     if(!r.ok){notify(data.error||'Erro',true);return;}
-    lastChildUrl=data.paymentLink;
     document.getElementById('child-label').textContent='✅ Link gerado para '+name;
-    document.getElementById('child-url').textContent=lastChildUrl;
+    document.getElementById('child-url').textContent=data.paymentLink;
     document.getElementById('child-form').style.display='none';
     document.getElementById('child-result').style.display='block';
     notify('Link gerado!');
-  } catch(e){notify('Erro ao gerar link',true);}
+  }catch(e){notify('Erro ao gerar link',true);}
 }
 
-function clearChildGen() {
+function clearChildGen(){
   document.getElementById('child-form').style.display='block';
   document.getElementById('child-result').style.display='none';
   document.getElementById('child-name').value='';
   document.getElementById('child-email').value='';
-  lastChildUrl='';
 }
 
-function copyL(spanId, btnId) {
+async function genFreeLink(){
+  const name=document.getElementById('free-name').value.trim();
+  const email=document.getElementById('free-email').value.trim();
+  if(!name||!email){notify('Preencha nome e email',true);return;}
+  try{
+    const r=await fetch('/api/admin/create-child-free',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,email})});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    document.getElementById('free-label').textContent='🎁 Link gratuito gerado para '+name;
+    document.getElementById('free-url').textContent=data.setupLink;
+    document.getElementById('free-form').style.display='none';
+    document.getElementById('free-result').style.display='block';
+    notify('Link gratuito gerado!');
+  }catch(e){notify('Erro ao gerar link',true);}
+}
+
+function clearFreeGen(){
+  document.getElementById('free-form').style.display='block';
+  document.getElementById('free-result').style.display='none';
+  document.getElementById('free-name').value='';
+  document.getElementById('free-email').value='';
+}
+
+function copyL(spanId,btnId){
   const text=document.getElementById(spanId).textContent;
   navigator.clipboard.writeText(text).then(()=>{
     const btn=document.getElementById(btnId);
@@ -425,42 +465,32 @@ function copyL(spanId, btnId) {
   });
 }
 
-async function loadGuardians() {
-  try {
+async function loadGuardians(){
+  try{
     const r=await fetch('/api/admin/guardians',{headers:{'x-admin-key':adminKey}});
     const gs=await r.json();
     let h='';
     if(!gs.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum guardião cadastrado</p>';}
-    else {
-      gs.forEach(g=>{
-        const c=g.paid?'#10b981':'#f59e0b';
-        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
-          <div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'✅ Ativo':'⏳ Pendente'}</span>
-            <button onclick="deleteGuardian(${g.id},'${g.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button>
-          </div></div>`;
-      });
-    }
+    else{gs.forEach(g=>{const c=g.paid?'#10b981':'#f59e0b';h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)"><div><div style="font-weight:600;font-size:11px">${g.name}</div><div style="font-size:9px;color:#52525b">${g.email}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;font-weight:600;color:${c}">${g.paid?'✅ Ativo':'⏳ Pendente'}</span><button onclick="deleteGuardian(${g.id},'${g.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button></div></div>`;});}
     document.getElementById('guardians-list').innerHTML=h;
-  } catch(e){}
+  }catch(e){}
 }
 
-async function deleteGuardian(id,name) {
-  if(!confirm('Deletar guardião '+name+'?')) return;
-  try {
+async function deleteGuardian(id,name){
+  if(!confirm('Deletar guardião '+name+'?'))return;
+  try{
     const r=await fetch('/api/admin/guardian/'+id,{method:'DELETE',headers:{'x-admin-key':adminKey}});
     const data=await r.json();
     if(r.ok){notify('Guardião deletado!');loadGuardians();loadDashboard();}
-    else notify(data.error||'Erro ao deletar',true);
-  } catch(e){notify('Erro ao deletar',true);}
+    else notify(data.error||'Erro',true);
+  }catch(e){notify('Erro ao deletar',true);}
 }
 
-async function addGuardian() {
+async function addGuardian(){
   const n=document.getElementById('g-name').value.trim();
   const e=document.getElementById('g-email').value.trim();
   if(!n||!e){notify('Preencha nome e email',true);return;}
-  try {
+  try{
     const r=await fetch('/api/admin/create-guardian',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name:n,email:e})});
     const data=await r.json();
     if(!r.ok){notify(data.error||'Erro',true);return;}
@@ -469,43 +499,24 @@ async function addGuardian() {
     document.getElementById('guardian-link-result').style.display='block';
     document.getElementById('g-name').value='';
     document.getElementById('g-email').value='';
-    notify('Guardião criado!');
-    loadGuardians();
-  } catch(e){notify('Erro ao criar guardião',true);}
+    notify('Guardião criado!');loadGuardians();
+  }catch(e){notify('Erro ao criar guardião',true);}
 }
 
 function copyGLink(){navigator.clipboard.writeText(lastGuardianLink).then(()=>notify('Link copiado!'));}
 
-async function loadOrgs() {
-  try {
+async function loadOrgs(){
+  try{
     const r=await fetch('/api/admin/orgs',{headers:{'x-admin-key':adminKey}});
     const orgs=await r.json();
     let h='';
     if(!orgs.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhuma igreja cadastrada</p>';}
-    else {
-      orgs.forEach(o=>{
-        h+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px;margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <div style="font-weight:700;font-size:13px;color:#fafafa">⛪ ${o.name}</div>
-              <div style="font-size:11px;color:#71717a;margin-top:2px">Pastor: ${o.pastor}</div>
-              <div style="font-size:10px;color:#52525b">${o.email}</div>
-            </div>
-            <button onclick="deleteOrg(${o.id},'${o.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:10px">
-            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#10b981">${o.total_guardians}</div><div style="font-size:9px;color:#52525b">Guardiões</div></div>
-            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#3b82f6">${o.total_children}</div><div style="font-size:9px;color:#52525b">Protegidos</div></div>
-            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#f59e0b">${o.total_payments}</div><div style="font-size:9px;color:#52525b">Pagamentos</div></div>
-          </div>
-        </div>`;
-      });
-    }
+    else{orgs.forEach(o=>{h+=`<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:14px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-weight:700;font-size:13px;color:#fafafa">⛪ ${o.name}</div><div style="font-size:11px;color:#71717a;margin-top:2px">Pastor: ${o.pastor}</div><div style="font-size:10px;color:#52525b">${o.email}</div></div><button onclick="deleteOrg(${o.id},'${o.name}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🗑️</button></div><div style="display:flex;gap:16px;margin-top:10px"><div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#10b981">${o.total_guardians}</div><div style="font-size:9px;color:#52525b">Guardiões</div></div><div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#3b82f6">${o.total_children}</div><div style="font-size:9px;color:#52525b">Protegidos</div></div><div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#f59e0b">${o.total_payments}</div><div style="font-size:9px;color:#52525b">Pagamentos</div></div></div></div>`;});}
     document.getElementById('orgs-list').innerHTML=h;
-  } catch(e){}
+  }catch(e){}
 }
 
-async function addOrg() {
+async function addOrg(){
   const name=document.getElementById('org-name').value.trim();
   const pastor=document.getElementById('org-pastor').value.trim();
   const email=document.getElementById('org-email').value.trim();
@@ -514,7 +525,7 @@ async function addOrg() {
   const doc=document.getElementById('org-document').value.trim();
   const mp=document.getElementById('org-mp').value.trim();
   if(!name||!pastor||!email){notify('Nome, pastor e email obrigatórios',true);return;}
-  try {
+  try{
     const r=await fetch('/api/admin/create-org',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,pastor,email,phone,address,document:doc,mp_token:mp})});
     const data=await r.json();
     if(!r.ok){notify(data.error||'Erro',true);return;}
@@ -522,72 +533,45 @@ async function addOrg() {
     document.getElementById('org-link').textContent=lastOrgLink;
     document.getElementById('org-link-result').style.display='block';
     ['org-name','org-pastor','org-email','org-phone','org-address','org-document','org-mp'].forEach(id=>document.getElementById(id).value='');
-    notify('Igreja cadastrada!');
-    loadOrgs();
-  } catch(e){notify('Erro ao cadastrar igreja',true);}
+    notify('Igreja cadastrada!');loadOrgs();
+  }catch(e){notify('Erro ao cadastrar igreja',true);}
 }
 
 function copyOrgLink(){navigator.clipboard.writeText(lastOrgLink).then(()=>notify('Link copiado!'));}
 
-async function deleteOrg(id,name) {
-  if(!confirm('Deletar igreja '+name+'? Isso remove todos os guardiões e protegidos dela.')) return;
-  try {
+async function deleteOrg(id,name){
+  if(!confirm('Deletar igreja '+name+'?'))return;
+  try{
     const r=await fetch('/api/admin/org/'+id,{method:'DELETE',headers:{'x-admin-key':adminKey}});
     const data=await r.json();
     if(r.ok){notify('Igreja deletada!');loadOrgs();loadDashboard();}
     else notify(data.error||'Erro',true);
-  } catch(e){notify('Erro ao deletar',true);}
+  }catch(e){notify('Erro ao deletar',true);}
 }
 
-async function loadPayments() {
-  try {
+async function loadPayments(){
+  try{
     const r=await fetch('/api/admin/payments',{headers:{'x-admin-key':adminKey}});
     const ps=await r.json();
     let h='';
     if(!ps.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum pagamento ainda</p>';}
-    else {
-      ps.forEach(p=>{
-        const c=p.status==='approved'?'#10b981':'#f59e0b';
-        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
-          <div><div style="font-weight:600;font-size:11px">${p.guardian_name}</div><div style="font-size:9px;color:#52525b">${p.email}</div></div>
-          <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div>
-          <div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅':'⏳'}</div></div></div>`;
-      });
-    }
+    else{ps.forEach(p=>{const c=p.status==='approved'?'#10b981':'#f59e0b';h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)"><div><div style="font-weight:600;font-size:11px">${p.guardian_name}</div><div style="font-size:9px;color:#52525b">${p.email}</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#10b981">R$ ${Number(p.amount).toFixed(2)}</div><div style="font-size:9px;color:${c};font-weight:600">${p.status==='approved'?'✅':'⏳'}</div></div></div>`;});}
     document.getElementById('payments-list').innerHTML=h;
-  } catch(e){}
+  }catch(e){}
 }
 
-function showQ(gender) {
-  const male=[
-    {q:"Você já conversou com alguém de confiança?",v:null},
-    {q:"Pense nas pessoas que te amam.",v:{t:"Não temas, porque eu sou contigo.",r:"Isaías 41:10"}},
-    {q:"Deus te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},
-    {q:"Tem certeza que deseja desativar?",v:null,final:true}
-  ];
-  const female=[
-    {q:"Você já conversou com alguém de confiança?",v:null},
-    {q:"Você é amada, filha de Deus.",v:{t:"Venham a mim todos os que estão cansados.",r:"Mateus 11:28"}},
-    {q:"Jesus te ama como você é.",v:{t:"Se o Filho os libertar, serão livres.",r:"João 8:36"}},
-    {q:"Tem certeza que deseja desativar?",v:null,final:true}
-  ];
+function showQ(gender){
+  const male=[{q:"Você já conversou com alguém de confiança?",v:null},{q:"Pense nas pessoas que te amam.",v:{t:"Não temas, porque eu sou contigo.",r:"Isaías 41:10"}},{q:"Deus te fortalece.",v:{t:"Tudo posso naquele que me fortalece.",r:"Filipenses 4:13"}},{q:"Tem certeza que deseja desativar?",v:null,final:true}];
+  const female=[{q:"Você já conversou com alguém de confiança?",v:null},{q:"Você é amada, filha de Deus.",v:{t:"Venham a mim todos os que estão cansados.",r:"Mateus 11:28"}},{q:"Jesus te ama como você é.",v:{t:"Se o Filho os libertar, serão livres.",r:"João 8:36"}},{q:"Tem certeza que deseja desativar?",v:null,final:true}];
   const steps=gender==='male'?male:female;
   let step=0;
   function render(){
     const s=steps[step];
-    let h=`<div style="display:flex;justify-content:space-between;margin-bottom:16px">
-      <span style="font-size:9px;color:#52525b">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span>
-      <span style="cursor:pointer;color:#52525b;font-size:18px" onclick="document.getElementById('q-modal').style.display='none'">&times;</span></div>`;
-    if(s.v) h+=`<div style="padding:10px;background:rgba(16,185,129,0.06);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981">
-      <p style="font-size:12px;color:#a1a1aa;font-style:italic">"${s.v.t}"</p><span style="font-size:9px;color:#10b981">${s.v.r}</span></div>`;
+    let h=`<div style="display:flex;justify-content:space-between;margin-bottom:16px"><span style="font-size:9px;color:#52525b">${gender==='male'?'Masculino':'Feminino'} — ${step+1}/${steps.length}</span><span style="cursor:pointer;color:#52525b;font-size:18px" onclick="document.getElementById('q-modal').style.display='none'">&times;</span></div>`;
+    if(s.v)h+=`<div style="padding:10px;background:rgba(16,185,129,0.06);border-radius:8px;margin-bottom:12px;border-left:3px solid #10b981"><p style="font-size:12px;color:#a1a1aa;font-style:italic">"${s.v.t}"</p><span style="font-size:9px;color:#10b981">${s.v.r}</span></div>`;
     h+=`<h3 style="font-size:14px;font-weight:600;color:#fafafa;margin-bottom:14px">${s.q}</h3>`;
-    if(s.final){
-      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').style.display='none'">Não, continuar protegido!</button>`;
-      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').style.display='none'">Sim, desativar</button>`;
-    } else {
-      h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Quero continuar</button>`;
-      h+=`<button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar</button>`;
-    }
+    if(s.final){h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="document.getElementById('q-modal').style.display='none'">Não, continuar!</button><button class="btn btn-s" style="width:100%;justify-content:center" onclick="document.getElementById('q-modal').style.display='none'">Sim, desativar</button>`;}
+    else{h+=`<button class="btn" style="width:100%;justify-content:center;margin-bottom:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34d399" onclick="nextQ()">Quero continuar</button><button class="btn btn-s" style="width:100%;justify-content:center" onclick="nextQ()">Preciso pensar</button>`;}
     document.getElementById('q-content').innerHTML=h;
   }
   window.nextQ=()=>{if(step<steps.length-1){step++;render();}};
