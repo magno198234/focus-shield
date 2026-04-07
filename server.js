@@ -112,8 +112,6 @@ async function initAdmin() {
     await pool.query('UPDATE users SET password = $1 WHERE email = $2', [adminPassword, adminEmail]);
     console.log('✅ Admin atualizado:', adminEmail);
   }
-
-  // Garante que existe um guardião admin para vincular protegidos diretos
   const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE email = $1', [adminEmail]);
   if (gRows.length === 0) {
     const token = crypto.randomBytes(16).toString('hex');
@@ -184,13 +182,12 @@ app.post('/api/admin/create-guardian', async (req, res) => {
   }
 });
 
-// ── ADMIN: CRIAR PROTEGIDO DIRETO (R$29,90) ───────────────────────────────────
+// ── ADMIN: CRIAR PROTEGIDO PAGO (R$29,90) ─────────────────────────────────────
 app.post('/api/admin/create-child', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   const { name, email } = req.body;
   if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
   try {
-    // Busca o guardião admin
     const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE email = $1', [process.env.ADMIN_EMAIL || 'admin@focusshield.app']);
     if (gRows.length === 0) return res.status(500).json({ error: 'Guardião admin não encontrado' });
     const setupToken = crypto.randomBytes(16).toString('hex');
@@ -204,6 +201,29 @@ app.post('/api/admin/create-child', async (req, res) => {
     });
   } catch (err) {
     console.error('Erro admin/create-child:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── ADMIN: CRIAR PROTEGIDO GRATUITO ───────────────────────────────────────────
+app.post('/api/admin/create-child-free', async (req, res) => {
+  if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
+  const { name, email } = req.body;
+  if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
+  try {
+    const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE email = $1', [process.env.ADMIN_EMAIL || 'admin@focusshield.app']);
+    if (gRows.length === 0) return res.status(500).json({ error: 'Guardião admin não encontrado' });
+    const setupToken = crypto.randomBytes(16).toString('hex');
+    await pool.query(
+      'INSERT INTO children (guardian_id, name, email, setup_token, active) VALUES ($1, $2, $3, $4, 1)',
+      [gRows[0].id, name, email, setupToken]
+    );
+    res.json({
+      success: true,
+      setupLink: `${req.protocol}://${req.get('host')}/setup.html?token=${setupToken}`
+    });
+  } catch (err) {
+    console.error('Erro admin/create-child-free:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -324,11 +344,7 @@ app.post('/api/create-payment', async (req, res) => {
     const idempotencyKey = crypto.randomBytes(16).toString('hex');
     const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${MP_TOKEN}`,
-        'Content-Type': 'application/json',
-        'X-Idempotency-Key': idempotencyKey
-      },
+      headers: { 'Authorization': `Bearer ${MP_TOKEN}`, 'Content-Type': 'application/json', 'X-Idempotency-Key': idempotencyKey },
       body: JSON.stringify({
         transaction_amount: 29.90,
         description: `Focus Shield — Proteção para ${child.name}`,
@@ -465,10 +481,7 @@ app.post('/api/admin/create-org', async (req, res) => {
       'INSERT INTO organizations (name, pastor, email, phone, address, document, mp_token, token) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
       [name, pastor, email, phone || null, address || null, document || null, mp_token || null, token]
     );
-    res.json({
-      success: true,
-      orgLink: `${req.protocol}://${req.get('host')}/igreja.html?token=${token}`
-    });
+    res.json({ success: true, orgLink: `${req.protocol}://${req.get('host')}/igreja.html?token=${token}` });
   } catch (err) {
     if (err.message.includes('unique') || err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email já cadastrado' });
     res.status(500).json({ error: err.message });
@@ -529,10 +542,7 @@ app.post('/api/org/:token/create-guardian', async (req, res) => {
     if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
     const guardianToken = crypto.randomBytes(16).toString('hex');
     await pool.query('INSERT INTO org_guardians (org_id, name, email, token) VALUES ($1, $2, $3, $4)', [oRows[0].id, name, email, guardianToken]);
-    res.json({
-      success: true,
-      guardianLink: `${req.protocol}://${req.get('host')}/guardiao-igreja.html?token=${guardianToken}`
-    });
+    res.json({ success: true, guardianLink: `${req.protocol}://${req.get('host')}/guardiao-igreja.html?token=${guardianToken}` });
   } catch (err) {
     if (err.message.includes('unique') || err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email já cadastrado' });
     res.status(500).json({ error: err.message });
