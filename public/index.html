@@ -92,6 +92,7 @@
     <div class="nav" data-page="questionnaire" onclick="goPage('questionnaire',this)">💛 Questionário</div>
     <div class="nav-label" id="admin-label" style="display:none">Administrador</div>
     <div class="nav" id="nav-guardians" data-page="guardians" onclick="goPage('guardians',this)" style="display:none">👥 Guardiões</div>
+    <div class="nav" id="nav-children" data-page="children" onclick="goPage('children',this)" style="display:none">🛡️ Meus Protegidos</div>
     <div class="nav" id="nav-orgs" data-page="orgs" onclick="goPage('orgs',this)" style="display:none">⛪ Igrejas</div>
     <div class="nav" id="nav-payments" data-page="payments" onclick="goPage('payments',this)" style="display:none">💰 Pagamentos</div>
     <div class="nav" id="nav-filters" data-page="filters" onclick="goPage('filters',this)" style="display:none">⚙️ Filtros</div>
@@ -124,13 +125,11 @@
     <!-- GERAR LINK -->
     <div class="page fade" id="pg-generate" style="display:none">
       <h1>Gerar Link</h1><p class="psub">Escolha o tipo de link que deseja gerar</p>
-
       <div class="tabs-row">
         <button class="tab-btn on" onclick="switchGenTab('guardiao',this)">🛡️ Guardião</button>
         <button class="tab-btn" onclick="switchGenTab('protegido-pago',this)">💳 Protegido R$29,90</button>
         <button class="tab-btn" onclick="switchGenTab('protegido-free',this)">🎁 Protegido Grátis</button>
       </div>
-
       <!-- Tab Guardião -->
       <div class="tab-content on" id="gen-tab-guardiao">
         <div class="card" style="max-width:480px">
@@ -139,7 +138,6 @@
             <input class="inp" id="gen-name" placeholder="Ex: João Silva">
             <label>Email do Guardião</label>
             <input class="inp" id="gen-email" placeholder="joao@email.com" style="margin-top:6px">
-            <p style="font-size:10px;color:#3f3f46;margin-top:10px">O guardião acessa o painel pelo link, sem precisar de senha.</p>
             <button class="btn btn-p" style="margin-top:12px" onclick="genLink()">🔗 Gerar Link do Guardião</button>
           </div>
           <div id="gen-result" style="display:none">
@@ -153,7 +151,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Protegido Pago -->
       <div class="tab-content" id="gen-tab-protegido-pago">
         <div class="card" style="max-width:480px">
@@ -179,7 +176,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Protegido Grátis -->
       <div class="tab-content" id="gen-tab-protegido-free">
         <div class="card" style="max-width:480px">
@@ -201,7 +197,6 @@
               <span style="flex:1;color:#a78bfa" id="free-url"></span>
               <button onclick="copyL('free-url','copy-b3')" style="background:none;border:none;color:#a78bfa;font-size:14px" id="copy-b3">📋</button>
             </div>
-            <p style="font-size:10px;color:#3f3f46;margin-top:6px">O protegido acessa este link e instala a proteção diretamente, sem pagar.</p>
             <button class="btn btn-s" style="margin-top:12px" onclick="clearFreeGen()">Gerar Novo</button>
           </div>
         </div>
@@ -247,6 +242,24 @@
       </div>
     </div>
 
+    <!-- MEUS PROTEGIDOS -->
+    <div class="page fade" id="pg-children" style="display:none">
+      <h1>Meus Protegidos</h1><p class="psub">Protegidos vinculados diretamente a você</p>
+      <div class="card" style="max-width:520px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">Lista de Protegidos</div>
+        <div id="children-list"></div>
+      </div>
+      <!-- Link de desativação gerado -->
+      <div id="deactivate-result" style="display:none;max-width:520px" class="card">
+        <p style="font-size:12px;color:#f59e0b;font-weight:600;margin-bottom:10px">🔓 Link de desativação gerado!</p>
+        <label>Envie este link para o protegido</label>
+        <div class="link-box" style="margin-top:6px;background:rgba(245,158,11,0.05);border-color:rgba(245,158,11,0.2)">
+          <span style="flex:1;color:#f59e0b" id="deactivate-url"></span>
+          <button onclick="copyL('deactivate-url','copy-deact')" style="background:none;border:none;color:#f59e0b;font-size:14px" id="copy-deact">📋</button>
+        </div>
+      </div>
+    </div>
+
     <!-- IGREJAS -->
     <div class="page fade" id="pg-orgs" style="display:none">
       <h1>Igrejas Parceiras</h1><p class="psub">Gerencie as igrejas parceiras</p>
@@ -266,7 +279,6 @@
         <input class="inp" id="org-document" placeholder="00.000.000/0000-00">
         <label>Token Mercado Pago (opcional)</label>
         <input class="inp" id="org-mp" placeholder="APP_USR-...">
-        <p style="font-size:10px;color:#3f3f46;margin-top:6px">Se não informado, o pagamento cai na sua conta e você repassa manualmente.</p>
         <button class="btn btn-p" style="margin-top:12px" onclick="addOrg()">⛪ Cadastrar Igreja</button>
         <div id="org-link-result" style="display:none;margin-top:12px">
           <label>Link do Painel da Igreja</label>
@@ -343,6 +355,7 @@ function setupUI(){
   if(user.role==='admin'){
     document.getElementById('admin-label').style.display='';
     document.getElementById('nav-guardians').style.display='';
+    document.getElementById('nav-children').style.display='';
     document.getElementById('nav-orgs').style.display='';
     document.getElementById('nav-payments').style.display='';
     document.getElementById('nav-filters').style.display='';
@@ -356,6 +369,7 @@ function goPage(id,el){
   if(el)el.classList.add('active');
   if(id==='dashboard')loadDashboard();
   if(id==='guardians')loadGuardians();
+  if(id==='children')loadChildren();
   if(id==='payments')loadPayments();
   if(id==='orgs')loadOrgs();
 }
@@ -402,13 +416,7 @@ async function genLink(){
   }catch(e){notify('Erro ao gerar link',true);}
 }
 
-function clearGen(){
-  document.getElementById('gen-form').style.display='block';
-  document.getElementById('gen-result').style.display='none';
-  document.getElementById('gen-name').value='';
-  document.getElementById('gen-email').value='';
-  genUrl='';
-}
+function clearGen(){document.getElementById('gen-form').style.display='block';document.getElementById('gen-result').style.display='none';document.getElementById('gen-name').value='';document.getElementById('gen-email').value='';genUrl='';}
 
 async function genChildLink(){
   const name=document.getElementById('child-name').value.trim();
@@ -426,12 +434,7 @@ async function genChildLink(){
   }catch(e){notify('Erro ao gerar link',true);}
 }
 
-function clearChildGen(){
-  document.getElementById('child-form').style.display='block';
-  document.getElementById('child-result').style.display='none';
-  document.getElementById('child-name').value='';
-  document.getElementById('child-email').value='';
-}
+function clearChildGen(){document.getElementById('child-form').style.display='block';document.getElementById('child-result').style.display='none';document.getElementById('child-name').value='';document.getElementById('child-email').value='';}
 
 async function genFreeLink(){
   const name=document.getElementById('free-name').value.trim();
@@ -449,19 +452,11 @@ async function genFreeLink(){
   }catch(e){notify('Erro ao gerar link',true);}
 }
 
-function clearFreeGen(){
-  document.getElementById('free-form').style.display='block';
-  document.getElementById('free-result').style.display='none';
-  document.getElementById('free-name').value='';
-  document.getElementById('free-email').value='';
-}
+function clearFreeGen(){document.getElementById('free-form').style.display='block';document.getElementById('free-result').style.display='none';document.getElementById('free-name').value='';document.getElementById('free-email').value='';}
 
 function copyL(spanId,btnId){
-  const text=document.getElementById(spanId).textContent;
-  navigator.clipboard.writeText(text).then(()=>{
-    const btn=document.getElementById(btnId);
-    btn.textContent='✅';
-    setTimeout(()=>btn.textContent='📋',2000);
+  navigator.clipboard.writeText(document.getElementById(spanId).textContent).then(()=>{
+    const btn=document.getElementById(btnId);btn.textContent='✅';setTimeout(()=>btn.textContent='📋',2000);
   });
 }
 
@@ -497,13 +492,52 @@ async function addGuardian(){
     lastGuardianLink=data.guardianLink;
     document.getElementById('g-setup-link').textContent=lastGuardianLink;
     document.getElementById('guardian-link-result').style.display='block';
-    document.getElementById('g-name').value='';
-    document.getElementById('g-email').value='';
+    document.getElementById('g-name').value='';document.getElementById('g-email').value='';
     notify('Guardião criado!');loadGuardians();
   }catch(e){notify('Erro ao criar guardião',true);}
 }
 
 function copyGLink(){navigator.clipboard.writeText(lastGuardianLink).then(()=>notify('Link copiado!'));}
+
+// ── MEUS PROTEGIDOS ────────────────────────────────────────────────────────────
+async function loadChildren(){
+  try{
+    const r=await fetch('/api/admin/children',{headers:{'x-admin-key':adminKey}});
+    const cs=await r.json();
+    let h='';
+    if(!cs.length){h='<p style="font-size:11px;color:#3f3f46;text-align:center;padding:16px">Nenhum protegido ainda. Use "Gerar Link" para adicionar.</p>';}
+    else{
+      cs.forEach(c=>{
+        const status=c.active?'✅ Ativo':'⏳ Pendente';
+        const color=c.active?'#10b981':'#f59e0b';
+        h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+          <div>
+            <div style="font-weight:600;font-size:11px">${c.name}</div>
+            <div style="font-size:9px;color:#52525b">${c.email||''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:9px;font-weight:600;color:${color}">${status}</span>
+            ${c.active?`<button onclick="gerarDesativacao(${c.id},'${c.name}')" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#f59e0b;border-radius:5px;padding:3px 8px;font-size:9px;cursor:pointer">🔓 Desativar</button>`:''}
+          </div>
+        </div>`;
+      });
+    }
+    document.getElementById('children-list').innerHTML=h;
+    document.getElementById('deactivate-result').style.display='none';
+  }catch(e){}
+}
+
+async function gerarDesativacao(id,name){
+  try{
+    const r=await fetch('/api/admin/deactivate/'+id,{method:'POST',headers:{'x-admin-key':adminKey}});
+    const data=await r.json();
+    if(!r.ok){notify(data.error||'Erro',true);return;}
+    document.getElementById('deactivate-url').textContent=data.deactivateLink;
+    document.getElementById('deactivate-result').style.display='block';
+    notify('Link de desativação gerado para '+name+'!');
+    document.getElementById('deactivate-result').scrollIntoView({behavior:'smooth'});
+  }catch(e){notify('Erro ao gerar link',true);}
+}
 
 async function loadOrgs(){
   try{
