@@ -30,12 +30,13 @@
     .sc code{display:inline-block;margin-top:4px;padding:4px 10px;border-radius:5px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);color:#34d399;font-family:monospace;font-size:11px;word-break:break-all}
     .sc .hl{color:#10b981;font-weight:600}
     .btn-download{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 16px;border-radius:8px;background:linear-gradient(135deg,#10b981,#059669);color:white;text-decoration:none;font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;border:none;cursor:pointer}
-    .btn-download:hover{opacity:0.9}
     .note{margin-top:16px;padding:12px 14px;border-radius:8px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.12);border-left:3px solid #3b82f6}
     .note p{font-size:11px;color:#93c5fd;line-height:1.4}
     .note strong{color:#60a5fa}
     .warn{margin-top:10px;padding:12px 14px;border-radius:8px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.12);border-left:3px solid #f59e0b}
     .warn p{font-size:11px;color:#fcd34d;line-height:1.4}
+    .warn strong{color:#f59e0b}
+    .warn code{display:inline-block;margin-top:4px;padding:3px 8px;border-radius:4px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:#fcd34d;font-family:monospace;font-size:10px;word-break:break-all}
     .section-title{font-size:12px;font-weight:700;color:#10b981;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em}
     .verse{margin-top:24px;text-align:center;padding:16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04)}
     .verse p{font-size:13px;color:#a1a1aa;font-style:italic;line-height:1.5}
@@ -84,6 +85,21 @@
       <div class="step"><div class="sn">3</div><div class="sc"><h3>Instale o perfil</h3><p>Vá em <span class="hl">Ajustes → Geral → VPN e Gerenciamento de Dispositivo</span>. Encontre o perfil NextDNS e clique em <span class="hl">Instalar</span>.</p></div></div>
       <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p>Sua proteção está ativa em <span class="hl">todos os apps e navegadores</span> do iPhone.</p></div></div>
       <div class="note"><p><strong>Seguro:</strong> Não altera fotos, arquivos ou dados pessoais. Apenas filtra o DNS.</p></div>
+
+      <!-- AVISO APP STORE -->
+      <div class="warn" style="margin-top:16px">
+        <p><strong>⚠️ App Store bloqueada?</strong></p>
+        <p style="margin-top:6px">Se a App Store ou outro app da Apple não abrir após a instalação, siga estes passos para liberar:</p>
+        <p style="margin-top:8px">1. Acesse <strong>my.nextdns.io</strong> no navegador</p>
+        <p style="margin-top:4px">2. Clique em <strong>"Lista de permissões"</strong></p>
+        <p style="margin-top:4px">3. Adicione os domínios abaixo um por um:</p>
+        <code>apple.com</code>
+        <code>icloud.com</code>
+        <code>mzstatic.com</code>
+        <code>itunes.apple.com</code>
+        <code>apps.apple.com</code>
+        <p style="margin-top:8px">4. Clique em <strong>Salvar</strong> e tente abrir a App Store novamente.</p>
+      </div>
     </div>
 
     <!-- ANDROID -->
@@ -109,8 +125,9 @@
 
       <p class="section-title">— Passo B: NextDNS no Windows —</p>
       <div class="step"><div class="sn">1</div><div class="sc"><h3>Abra as Configurações</h3><p>Clique no menu <span class="hl">Iniciar → Configurações → Rede e Internet → Wi-Fi</span>.<br>Clique na sua rede Wi-Fi → <span class="hl">Propriedades</span>.</p></div></div>
-      <div class="step"><div class="sn">2</div><div class="sc"><h3>Edite o DNS</h3><p>Role até <span class="hl">Atribuição do servidor DNS</span> → clique em <span class="hl">Editar</span>.<br>Mude para <span class="hl">Manual</span> e ative o IPv4.</p></div></div>
-      <div class="step"><div class="sn">3</div><div class="sc"><h3>Digite os endereços</h3><p>DNS preferencial:</p><code>45.90.28.215</code><p style="margin-top:4px">DNS alternativo:</p><code>45.90.30.215</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
+      <div class="step"><div class="sn">2</div><div class="sc"><h3>Edite o DNS</h3><p>Role até <span class="hl">Atribuição do servidor DNS</span> → clique em <span class="hl">Editar</span>.<br>Mude para <span class="hl">Manual</span> e ative o IPv4 e IPv6.</p></div></div>
+      <div class="step"><div class="sn">3</div><div class="sc"><h3>IPv4</h3><p>DNS preferencial:</p><code>45.90.28.215</code><p style="margin-top:4px">DNS alternativo:</p><code>45.90.30.215</code></div></div>
+      <div class="step"><div class="sn">4</div><div class="sc"><h3>IPv6</h3><p>DNS preferencial:</p><code>2a07:a8c0::88:4789</code><p style="margin-top:4px">DNS alternativo:</p><code>2a07:a8c1::88:4789</code><p style="margin-top:4px">Clique em <span class="hl">Salvar</span>.</p></div></div>
       <div class="step"><div class="sn">✓</div><div class="sc"><h3>Pronto!</h3><p><span class="hl">Todos os navegadores</span> (Chrome, Edge, Firefox) estão protegidos.</p></div></div>
       <div class="note"><p><strong>Seguro:</strong> Apenas muda o servidor DNS. Não instala nada no PC.</p></div>
     </div>
