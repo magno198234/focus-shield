@@ -72,7 +72,7 @@
     .badge-active { background:rgba(82,183,136,0.15); color:var(--green); border-radius:8px; padding:4px 10px; font-size:11px; font-weight:600; }
     .badge-pending { background:rgba(201,168,76,0.15); color:var(--gold); border-radius:8px; padding:4px 10px; font-size:11px; font-weight:600; }
 
-    .price-badge { display:inline-block; background:rgba(82,183,136,0.1); border:1px solid rgba(82,183,136,0.3); border-radius:8px; padding:6px 12px; font-size:13px; font-weight:700; color:var(--green); margin-bottom:12px; }
+    /* A classe price-badge foi mantida no CSS apenas por precaução, caso você queira usar depois, mas removida do HTML */
 
     .empty { text-align:center; padding:32px 20px; color:var(--text-dim); font-size:14px; }
 
@@ -131,15 +131,14 @@
     <div class="tab" id="tab-novo">
       <p class="section-title">➕ Novo <span>Protegido</span></p>
       <div class="card">
-        <div class="price-badge">💳 R$ 50,00 via PIX</div>
         <div class="field-label">Nome do Protegido</div>
         <input type="text" class="field-input" id="child-name" placeholder="Ex: João Silva">
         <div class="field-label">Email do Protegido</div>
         <input type="email" class="field-input" id="child-email" placeholder="joao@email.com">
-        <button class="btn-primary" id="btn-criar" onclick="criarProtegido()">Gerar Link de Pagamento</button>
-        <div class="link-box" id="payment-link-box"></div>
-        <button class="btn-copy" id="btn-copy-payment" onclick="copiarLink()">📋 Copiar Link</button>
-        <p style="font-size:11px;color:#3f3f46;margin-top:10px;text-align:center">O protegido acessa o link, paga R$50,00 via PIX e ativa a proteção.</p>
+        <button class="btn-primary" id="btn-criar" onclick="criarProtegido()">Gerar Link de Instalação</button>
+        <div class="link-box" id="setup-link-box"></div>
+        <button class="btn-copy" id="btn-copy-setup" onclick="copiarLink()">📋 Copiar Link</button>
+        <p style="font-size:11px;color:#3f3f46;margin-top:10px;text-align:center">O protegido acessa o link e ativa a proteção.</p>
       </div>
     </div>
 
@@ -161,7 +160,7 @@
 
 <script>
   const token = new URLSearchParams(window.location.search).get('token');
-  let paymentLink = '';
+  let setupLink = '';
 
   async function init() {
     if (!token) {
@@ -222,10 +221,10 @@
       });
       const data = await r.json();
       if (!r.ok) { showToast(data.error || 'Erro ao criar', true); return; }
-      paymentLink = data.paymentLink;
-      document.getElementById('payment-link-box').textContent = paymentLink;
-      document.getElementById('payment-link-box').style.display = 'block';
-      document.getElementById('btn-copy-payment').style.display = 'block';
+      setupLink = data.setupLink;
+      document.getElementById('setup-link-box').textContent = setupLink;
+      document.getElementById('setup-link-box').style.display = 'block';
+      document.getElementById('btn-copy-setup').style.display = 'block';
       document.getElementById('child-name').value = '';
       document.getElementById('child-email').value = '';
       showToast('✅ Link gerado! Copie e envie ao protegido.');
@@ -235,13 +234,13 @@
     } catch(e) {
       showToast('Erro de conexão', true);
     } finally {
-      btn.textContent = 'Gerar Link de Pagamento';
+      btn.textContent = 'Gerar Link de Instalação';
       btn.disabled = false;
     }
   }
 
   function copiarLink() {
-    navigator.clipboard.writeText(paymentLink).then(() => showToast('📋 Link copiado!'));
+    navigator.clipboard.writeText(setupLink).then(() => showToast('📋 Link copiado!'));
   }
 
   function switchTab(tab, btn) {
