@@ -8,7 +8,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const MP_TOKEN = process.env.MP_ACCESS_TOKEN || '';
 const ADMIN_KEY = process.env.ADMIN_KEY || 'Pitaya251534@';
 
 const pool = new Pool({
@@ -182,7 +181,7 @@ app.post('/api/admin/create-guardian', async (req, res) => {
   }
 });
 
-// ── ADMIN: CRIAR PROTEGIDO PAGO (R$29,90) ─────────────────────────────────────
+// ── ADMIN: CRIAR PROTEGIDO (Agora Gratuito por Padrão) ─────────────────────────────────────
 app.post('/api/admin/create-child', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   const { name, email } = req.body;
@@ -191,14 +190,16 @@ app.post('/api/admin/create-child', async (req, res) => {
     const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE email = $1', [process.env.ADMIN_EMAIL || 'admin@focusshield.app']);
     if (gRows.length === 0) return res.status(500).json({ error: 'Guardião admin não encontrado' });
     const setupToken = crypto.randomBytes(16).toString('hex');
-    await pool.query('INSERT INTO children (guardian_id, name, email, setup_token) VALUES ($1, $2, $3, $4)', [gRows[0].id, name, email, setupToken]);
-    res.json({ success: true, paymentLink: `${req.protocol}://${req.get('host')}/payment.html?token=${setupToken}` });
+    // Insere já com active = 1
+    await pool.query('INSERT INTO children (guardian_id, name, email, setup_token, active) VALUES ($1, $2, $3, $4, 1)', [gRows[0].id, name, email, setupToken]);
+    // Retorna direto o link de setup, ignorando pagamento
+    res.json({ success: true, setupLink: `${req.protocol}://${req.get('host')}/setup.html?token=${setupToken}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── ADMIN: CRIAR PROTEGIDO GRATUITO ───────────────────────────────────────────
+// Mantive a rota antiga para compatibilidade, caso algum lugar do painel ainda chame ela
 app.post('/api/admin/create-child-free', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   const { name, email } = req.body;
@@ -214,19 +215,17 @@ app.post('/api/admin/create-child-free', async (req, res) => {
   }
 });
 
-// ── ADMIN: LISTAR MEUS PROTEGIDOS DIRETOS ─────────────────────────────────────
 app.get('/api/admin/children', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   try {
     const { rows: gRows } = await pool.query('SELECT id FROM guardians WHERE email = $1', [process.env.ADMIN_EMAIL || 'admin@focusshield.app']);
     if (gRows.length === 0) return res.json([]);
+    // Removido o LEFT JOIN com payments
     const { rows } = await pool.query(`
-      SELECT c.id, c.name, c.email, c.active, c.created_at,
-             p.status as payment_status
-      FROM children c
-      LEFT JOIN payments p ON p.child_id = c.id AND p.status = 'approved'
-      WHERE c.guardian_id = $1
-      ORDER BY c.created_at DESC
+      SELECT id, name, email, active, created_at
+      FROM children
+      WHERE guardian_id = $1
+      ORDER BY created_at DESC
     `, [gRows[0].id]);
     res.json(rows);
   } catch (err) {
@@ -257,6 +256,7 @@ app.delete('/api/admin/guardian/:id', async (req, res) => {
   }
 });
 
+// Rota mantida caso precise do histórico, mas sem Mercado Pago ativo
 app.get('/api/admin/payments', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   try {
@@ -288,12 +288,11 @@ app.get('/api/guardian/:token', async (req, res) => {
     const { rows } = await pool.query('SELECT id, name, email FROM guardians WHERE token = $1', [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Guardião não encontrado' });
     const guardian = rows[0];
+    // Removido o LEFT JOIN com payments
     const { rows: children } = await pool.query(`
-      SELECT c.id, c.name, c.email, c.active, c.nextdns_id, c.created_at,
-             p.status as payment_status, p.amount
-      FROM children c
-      LEFT JOIN payments p ON p.child_id = c.id AND p.status = 'approved'
-      WHERE c.guardian_id = $1 ORDER BY c.created_at DESC
+      SELECT id, name, email, active, nextdns_id, created_at
+      FROM children
+      WHERE guardian_id = $1 ORDER BY created_at DESC
     `, [guardian.id]);
     res.json({ guardian, children });
   } catch (err) {
@@ -308,8 +307,10 @@ app.post('/api/guardian/:token/create-child', async (req, res) => {
     const { name, email } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
     const setupToken = crypto.randomBytes(16).toString('hex');
-    const { rows } = await pool.query('INSERT INTO children (guardian_id, name, email, setup_token) VALUES ($1, $2, $3, $4) RETURNING id', [gRows[0].id, name, email, setupToken]);
-    res.json({ success: true, childId: rows[0].id, paymentLink: `${req.protocol}://${req.get('host')}/payment.html?token=${setupToken}` });
+    // Insere já com active = 1
+    const { rows } = await pool.query('INSERT INTO children (guardian_id, name, email, setup_token, active) VALUES ($1, $2, $3, $4, 1) RETURNING id', [gRows[0].id, name, email, setupToken]);
+    // Retorna direto o setupLink ao invés do paymentLink
+    res.json({ success: true, childId: rows[0].id, setupLink: `${req.protocol}://${req.get('host')}/setup.html?token=${setupToken}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -329,69 +330,7 @@ app.post('/api/guardian/:token/deactivate/:childId', async (req, res) => {
   }
 });
 
-// ── PROTEGIDO ──────────────────────────────────────────────────────────────────
-app.post('/api/create-payment', async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ error: 'Token obrigatório' });
-  try {
-    const { rows } = await pool.query(`
-      SELECT c.*, g.name as guardian_name, g.email as guardian_email
-      FROM children c JOIN guardians g ON g.id = c.guardian_id
-      WHERE c.setup_token = $1
-    `, [token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Link inválido' });
-    const child = rows[0];
-    const { rows: pRows } = await pool.query('SELECT * FROM payments WHERE child_id = $1 AND status = $2', [child.id, 'approved']);
-    if (pRows.length > 0) return res.json({ status: 'already_paid' });
-    const payerEmail = child.email || child.guardian_email;
-    const idempotencyKey = crypto.randomBytes(16).toString('hex');
-    const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${MP_TOKEN}`, 'Content-Type': 'application/json', 'X-Idempotency-Key': idempotencyKey },
-      body: JSON.stringify({
-        transaction_amount: 29.90,
-        description: `Focus Shield — Proteção para ${child.name}`,
-        payment_method_id: 'pix',
-        payer: { email: payerEmail, first_name: child.name },
-        metadata: { child_id: child.id, setup_token: token }
-      })
-    });
-    const mpData = await mpResponse.json();
-    if (!mpResponse.ok) {
-      console.error('❌ Erro MP:', JSON.stringify(mpData));
-      return res.status(500).json({ error: 'Erro ao criar pagamento', details: mpData });
-    }
-    await pool.query('INSERT INTO payments (guardian_id, child_id, mp_payment_id, status, amount) VALUES ($1, $2, $3, $4, 29.90) ON CONFLICT (mp_payment_id) DO NOTHING', [child.guardian_id, child.id, String(mpData.id), mpData.status]);
-    const qrData = mpData.point_of_interaction?.transaction_data;
-    res.json({ success: true, payment_id: mpData.id, pix_qr_code_base64: qrData?.qr_code_base64, pix_copia_cola: qrData?.qr_code });
-  } catch (err) {
-    console.error('❌ Erro create-payment:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/payment-status/:token', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM children WHERE setup_token = $1', [req.params.token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
-    const child = rows[0];
-    const { rows: pRows } = await pool.query('SELECT * FROM payments WHERE child_id = $1 ORDER BY created_at DESC LIMIT 1', [child.id]);
-    if (pRows.length === 0) return res.json({ status: 'pending' });
-    const payment = pRows[0];
-    if (payment.status !== 'approved') {
-      const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${payment.mp_payment_id}`, { headers: { 'Authorization': `Bearer ${MP_TOKEN}` } });
-      const mpData = await mpRes.json();
-      if (mpData.status === 'approved') {
-        await pool.query('UPDATE payments SET status = $1, paid_at = NOW() WHERE id = $2', ['approved', payment.id]);
-        await pool.query('UPDATE children SET active = 1 WHERE id = $1', [child.id]);
-        return res.json({ status: 'approved' });
-      }
-    }
-    res.json({ status: payment.status });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// ── PROTEGIDO (Telas de Setup) ──────────────────────────────────────────────────
 
 app.get('/api/validate-setup/:token', async (req, res) => {
   try {
@@ -399,7 +338,15 @@ app.get('/api/validate-setup/:token', async (req, res) => {
       SELECT c.*, g.name as guardian_name FROM children c
       JOIN guardians g ON g.id = c.guardian_id WHERE c.setup_token = $1
     `, [req.params.token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
+    if (rows.length === 0) {
+      // Tenta buscar nas igrejas se não achar nos normais
+      const { rows: orgRows } = await pool.query(`
+         SELECT c.*, g.name as guardian_name FROM org_children c
+         JOIN org_guardians g ON g.id = c.org_guardian_id WHERE c.setup_token = $1
+      `, [req.params.token]);
+      if(orgRows.length === 0) return res.status(404).json({ error: 'Token inválido' });
+      return res.json({ valid: true, childName: orgRows[0].name, guardianName: orgRows[0].guardian_name, active: orgRows[0].active });
+    }
     res.json({ valid: true, childName: rows[0].name, guardianName: rows[0].guardian_name, active: rows[0].active });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -410,7 +357,14 @@ app.post('/api/setup-complete', async (req, res) => {
   const { token, nextdnsId } = req.body;
   try {
     const { rows } = await pool.query('SELECT * FROM children WHERE setup_token = $1', [token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
+    if (rows.length === 0) {
+        // Se não for criança normal, atualiza org_children
+        const { rows: orgRows } = await pool.query('SELECT * FROM org_children WHERE setup_token = $1', [token]);
+        if(orgRows.length === 0) return res.status(404).json({ error: 'Token inválido' });
+        // Na org_children não tem nextdns_id no schema atual, apenas marca como ativo
+        await pool.query('UPDATE org_children SET active = 1 WHERE setup_token = $1', [token]);
+        return res.json({ success: true });
+    }
     await pool.query('UPDATE children SET nextdns_id = $1, active = 1 WHERE setup_token = $2', [nextdnsId, token]);
     res.json({ success: true });
   } catch (err) {
@@ -424,7 +378,14 @@ app.get('/api/validate-deactivate/:token', async (req, res) => {
       SELECT c.*, g.name as guardian_name FROM children c
       JOIN guardians g ON g.id = c.guardian_id WHERE c.deactivate_token = $1
     `, [req.params.token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Link inválido ou já utilizado' });
+    if (rows.length === 0) {
+        const { rows: orgRows } = await pool.query(`
+          SELECT c.*, g.name as guardian_name FROM org_children c
+          JOIN org_guardians g ON g.id = c.org_guardian_id WHERE c.deactivate_token = $1
+        `, [req.params.token]);
+        if(orgRows.length === 0) return res.status(404).json({ error: 'Link inválido ou já utilizado' });
+        return res.json({ valid: true, childName: orgRows[0].name, guardianName: orgRows[0].guardian_name });
+    }
     res.json({ valid: true, childName: rows[0].name, guardianName: rows[0].guardian_name });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -435,31 +396,16 @@ app.post('/api/deactivate', async (req, res) => {
   const { token } = req.body;
   try {
     const { rows } = await pool.query('SELECT * FROM children WHERE deactivate_token = $1', [token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Link inválido' });
+    if (rows.length === 0) {
+        const { rows: orgRows } = await pool.query('SELECT * FROM org_children WHERE deactivate_token = $1', [token]);
+        if (orgRows.length === 0) return res.status(404).json({ error: 'Link inválido' });
+        await pool.query('UPDATE org_children SET active = 0, deactivate_token = NULL WHERE deactivate_token = $1', [token]);
+        return res.json({ success: true });
+    }
     await pool.query('UPDATE children SET active = 0, deactivate_token = NULL WHERE deactivate_token = $1', [token]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/webhook/mercadopago', async (req, res) => {
-  const { type, data } = req.body;
-  res.sendStatus(200);
-  if (type !== 'payment' || !data?.id) return;
-  try {
-    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, { headers: { 'Authorization': `Bearer ${MP_TOKEN}` } });
-    const mpData = await mpRes.json();
-    if (mpData.status === 'approved') {
-      await pool.query('UPDATE payments SET status = $1, paid_at = NOW() WHERE mp_payment_id = $2', ['approved', String(data.id)]);
-      const { rows } = await pool.query('SELECT child_id FROM payments WHERE mp_payment_id = $1', [String(data.id)]);
-      if (rows.length > 0) await pool.query('UPDATE children SET active = 1 WHERE id = $1', [rows[0].child_id]);
-      await pool.query('UPDATE org_payments SET status = $1, paid_at = NOW() WHERE mp_payment_id = $2', ['approved', String(data.id)]);
-      const { rows: orgRows } = await pool.query('SELECT org_child_id FROM org_payments WHERE mp_payment_id = $1', [String(data.id)]);
-      if (orgRows.length > 0) await pool.query('UPDATE org_children SET active = 1 WHERE id = $1', [orgRows[0].org_child_id]);
-    }
-  } catch (err) {
-    console.error('Erro webhook:', err.message);
   }
 });
 
@@ -484,11 +430,11 @@ app.post('/api/admin/create-org', async (req, res) => {
 app.get('/api/admin/orgs', async (req, res) => {
   if (req.headers['x-admin-key'] !== ADMIN_KEY) return res.status(401).json({ error: 'Não autorizado' });
   try {
+    // Removido o count de org_payments
     const { rows } = await pool.query(`
-      SELECT o.*,
+      SELECT o.id, o.name, o.pastor, o.email, o.phone, o.address, o.document, o.mp_token, o.token, o.active, o.created_at,
         (SELECT COUNT(*) FROM org_guardians WHERE org_id = o.id) as total_guardians,
-        (SELECT COUNT(*) FROM org_children WHERE org_id = o.id) as total_children,
-        (SELECT COUNT(*) FROM org_payments WHERE org_id = o.id AND status = 'approved') as total_payments
+        (SELECT COUNT(*) FROM org_children WHERE org_id = o.id) as total_children
       FROM organizations o ORDER BY o.created_at DESC
     `);
     res.json(rows);
@@ -550,11 +496,11 @@ app.get('/api/org-guardian/:token', async (req, res) => {
     `, [req.params.token]);
     if (rows.length === 0) return res.status(404).json({ error: 'Guardião não encontrado' });
     const guardian = rows[0];
+    // Removido o LEFT JOIN com org_payments
     const { rows: children } = await pool.query(`
-      SELECT c.id, c.name, c.email, c.active, c.created_at, p.status as payment_status
-      FROM org_children c
-      LEFT JOIN org_payments p ON p.org_child_id = c.id AND p.status = 'approved'
-      WHERE c.org_guardian_id = $1 ORDER BY c.created_at DESC
+      SELECT id, name, email, active, created_at
+      FROM org_children
+      WHERE org_guardian_id = $1 ORDER BY created_at DESC
     `, [guardian.id]);
     res.json({ guardian, children });
   } catch (err) {
@@ -572,63 +518,10 @@ app.post('/api/org-guardian/:token/create-child', async (req, res) => {
     const { name, email } = req.body;
     if (!name || !email) return res.status(400).json({ error: 'Nome e email obrigatórios' });
     const setupToken = crypto.randomBytes(16).toString('hex');
-    await pool.query('INSERT INTO org_children (org_guardian_id, org_id, name, email, setup_token) VALUES ($1, $2, $3, $4, $5)', [gRows[0].id, gRows[0].org_id, name, email, setupToken]);
-    res.json({ success: true, paymentLink: `${req.protocol}://${req.get('host')}/payment-org.html?token=${setupToken}` });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/create-org-payment', async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ error: 'Token obrigatório' });
-  try {
-    const { rows } = await pool.query(`
-      SELECT c.*, o.mp_token as org_mp_token, o.name as org_name
-      FROM org_children c JOIN organizations o ON o.id = c.org_id
-      WHERE c.setup_token = $1
-    `, [token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Link inválido' });
-    const child = rows[0];
-    const { rows: pRows } = await pool.query('SELECT * FROM org_payments WHERE org_child_id = $1 AND status = $2', [child.id, 'approved']);
-    if (pRows.length > 0) return res.json({ status: 'already_paid' });
-    const mpToken = child.org_mp_token || MP_TOKEN;
-    const idempotencyKey = crypto.randomBytes(16).toString('hex');
-    const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${mpToken}`, 'Content-Type': 'application/json', 'X-Idempotency-Key': idempotencyKey },
-      body: JSON.stringify({ transaction_amount: 50.00, description: `Focus Shield — Proteção para ${child.name} (${child.org_name})`, payment_method_id: 'pix', payer: { email: child.email, first_name: child.name } })
-    });
-    const mpData = await mpResponse.json();
-    if (!mpResponse.ok) return res.status(500).json({ error: 'Erro ao criar pagamento' });
-    await pool.query('INSERT INTO org_payments (org_id, org_child_id, mp_payment_id, status, amount) VALUES ($1, $2, $3, $4, 50.00) ON CONFLICT (mp_payment_id) DO NOTHING', [child.org_id, child.id, String(mpData.id), mpData.status]);
-    const qrData = mpData.point_of_interaction?.transaction_data;
-    res.json({ success: true, payment_id: mpData.id, pix_qr_code_base64: qrData?.qr_code_base64, pix_copia_cola: qrData?.qr_code });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/api/org-payment-status/:token', async (req, res) => {
-  try {
-    const { rows } = await pool.query('SELECT * FROM org_children WHERE setup_token = $1', [req.params.token]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Token inválido' });
-    const child = rows[0];
-    const { rows: pRows } = await pool.query('SELECT * FROM org_payments WHERE org_child_id = $1 ORDER BY created_at DESC LIMIT 1', [child.id]);
-    if (pRows.length === 0) return res.json({ status: 'pending' });
-    const payment = pRows[0];
-    if (payment.status !== 'approved') {
-      const { rows: oRows } = await pool.query('SELECT mp_token FROM organizations WHERE id = $1', [child.org_id]);
-      const mpToken = oRows[0]?.mp_token || MP_TOKEN;
-      const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${payment.mp_payment_id}`, { headers: { 'Authorization': `Bearer ${mpToken}` } });
-      const mpData = await mpRes.json();
-      if (mpData.status === 'approved') {
-        await pool.query('UPDATE org_payments SET status = $1, paid_at = NOW() WHERE id = $2', ['approved', payment.id]);
-        await pool.query('UPDATE org_children SET active = 1 WHERE id = $1', [child.id]);
-        return res.json({ status: 'approved' });
-      }
-    }
-    res.json({ status: payment.status });
+    // Insere já com active = 1
+    await pool.query('INSERT INTO org_children (org_guardian_id, org_id, name, email, setup_token, active) VALUES ($1, $2, $3, $4, $5, 1)', [gRows[0].id, gRows[0].org_id, name, email, setupToken]);
+    // Redireciona direto pro setup normal (ou uma página específica, caso você crie um setup-org no futuro)
+    res.json({ success: true, setupLink: `${req.protocol}://${req.get('host')}/setup.html?token=${setupToken}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
