@@ -103,7 +103,6 @@
   </div>
 
   <div class="main">
-    <!-- DASHBOARD -->
     <div class="page fade" id="pg-dashboard">
       <h1>Dashboard</h1><p class="psub">Visão geral do sistema</p>
       <div class="stats">
@@ -120,14 +119,12 @@
       </div>
     </div>
 
-    <!-- GERAR LINK -->
     <div class="page fade" id="pg-generate" style="display:none">
       <h1>Gerar Link</h1><p class="psub">Escolha o tipo de link que deseja gerar</p>
       <div class="tabs-row">
         <button class="tab-btn on" onclick="switchGenTab('guardiao',this)">🛡️ Guardião</button>
         <button class="tab-btn" onclick="switchGenTab('protegido',this)">🛡️ Protegido</button>
       </div>
-      <!-- Tab Guardião -->
       <div class="tab-content on" id="gen-tab-guardiao">
         <div class="card" style="max-width:480px">
           <div id="gen-form">
@@ -148,7 +145,6 @@
           </div>
         </div>
       </div>
-      <!-- Tab Protegido -->
       <div class="tab-content" id="gen-tab-protegido">
         <div class="card" style="max-width:480px">
           <div id="child-form">
@@ -175,7 +171,6 @@
       </div>
     </div>
 
-    <!-- QUESTIONNAIRE -->
     <div class="page fade" id="pg-questionnaire" style="display:none">
       <h1>Questionário de Reflexão</h1><p class="psub">Visualize o que aparece antes da desativação</p>
       <div style="display:flex;gap:12px;max-width:480px">
@@ -192,7 +187,6 @@
       </div>
     </div>
 
-    <!-- GUARDIANS -->
     <div class="page fade" id="pg-guardians" style="display:none">
       <h1>Meus Guardiões</h1><p class="psub">Gerencie seus guardiões</p>
       <div class="card" style="max-width:520px">
@@ -214,14 +208,12 @@
       </div>
     </div>
 
-    <!-- MEUS PROTEGIDOS -->
     <div class="page fade" id="pg-children" style="display:none">
       <h1>Meus Protegidos</h1><p class="psub">Protegidos vinculados diretamente a você</p>
       <div class="card" style="max-width:520px">
         <div style="font-size:13px;font-weight:600;margin-bottom:10px">Lista de Protegidos</div>
         <div id="children-list"></div>
       </div>
-      <!-- Link de desativação gerado -->
       <div id="deactivate-result" style="display:none;max-width:520px" class="card">
         <p style="font-size:12px;color:#f59e0b;font-weight:600;margin-bottom:10px">🔓 Link de desativação gerado!</p>
         <label>Envie este link para o protegido</label>
@@ -232,7 +224,6 @@
       </div>
     </div>
 
-    <!-- IGREJAS -->
     <div class="page fade" id="pg-orgs" style="display:none">
       <h1>Igrejas Parceiras</h1><p class="psub">Gerencie as igrejas parceiras</p>
       <div class="card" style="max-width:560px">
@@ -264,7 +255,6 @@
       </div>
     </div>
 
-    <!-- FILTERS -->
     <div class="page fade" id="pg-filters" style="display:none">
       <h1>Filtros</h1><p class="psub">Palavras-chave bloqueadas</p>
       <div class="card" style="max-width:520px">
@@ -497,16 +487,22 @@ async function addOrg(){
   const phone=document.getElementById('org-phone').value.trim();
   const address=document.getElementById('org-address').value.trim();
   const doc=document.getElementById('org-document').value.trim();
-  const mp=document.getElementById('org-mp').value.trim(); // Mantido no código caso use depois, mas sem efeito
+
+  // REMOVIDA A REFERÊNCIA AO org-mp
+
   if(!name||!pastor||!email){notify('Nome, pastor e email obrigatórios',true);return;}
   try{
-    const r=await fetch('/api/admin/create-org',{method:'POST',headers:{'Content-Type':'application/json','x-admin-key':adminKey},body:JSON.stringify({name,pastor,email,phone,address,document:doc,mp_token:mp})});
+    const r=await fetch('/api/admin/create-org',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-key':adminKey},
+      body:JSON.stringify({name,pastor,email,phone,address,document:doc}) // Não manda mais mp_token
+    });
     const data=await r.json();
     if(!r.ok){notify(data.error||'Erro',true);return;}
     lastOrgLink=data.orgLink;
     document.getElementById('org-link').textContent=lastOrgLink;
     document.getElementById('org-link-result').style.display='block';
-    ['org-name','org-pastor','org-email','org-phone','org-address','org-document','org-mp'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value=''});
+    ['org-name','org-pastor','org-email','org-phone','org-address','org-document'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value=''});
     notify('Igreja cadastrada!');loadOrgs();
   }catch(e){notify('Erro ao cadastrar igreja',true);}
 }
